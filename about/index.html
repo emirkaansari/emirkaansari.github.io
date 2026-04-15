@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>About — Emir Kaan Sari</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #0f0f0f;
+      color: #e0e0e0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+      padding-top: 5rem;
+    }
+    nav {
+      position: fixed;
+      top: 0;
+      width: 100%;
+      display: flex;
+      justify-content: center;
+      gap: 2rem;
+      padding: 1.25rem;
+      background: #0f0f0f;
+      border-bottom: 1px solid #1e1e1e;
+    }
+    nav a {
+      color: #888;
+      text-decoration: none;
+      font-size: 0.95rem;
+      transition: color 0.2s;
+    }
+    nav a:hover, nav a.active { color: #e0e0e0; }
+    .container {
+      max-width: 640px;
+      width: 100%;
+      padding: 3rem 1.5rem;
+    }
+    h1 { font-size: 2rem; font-weight: 600; letter-spacing: -0.5px; margin-bottom: 1.5rem; }
+    p { color: #888; font-size: 1rem; line-height: 1.7; margin-bottom: 1rem; }
+    .skills {
+      margin-top: 2rem;
+    }
+    .skills h2 { font-size: 1rem; font-weight: 600; color: #e0e0e0; margin-bottom: 0.75rem; }
+    .tags { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+    .tag {
+      background: #1e1e1e;
+      color: #aaa;
+      padding: 0.3rem 0.75rem;
+      border-radius: 4px;
+      font-size: 0.85rem;
+    }
+  </style>
+</head>
+<body>
+  <nav>
+    <a href="/">Home</a>
+    <a href="/about" class="active">About</a>
+    <a href="/projects">Projects</a>
+    <a href="/contact">Contact</a>
+  </nav>
+  <div class="container">
+    <h1>About</h1>
+    <p>Hi, I'm Emir Kaan Sari. This is a placeholder bio — add a sentence or two about who you are and what you do.</p>
+    <p>Tell your story here: your background, what you're working on, or what you're interested in.</p>
+    <div class="skills">
+      <h2>Skills</h2>
+      <div class="tags">
+        <span class="tag">Skill 1</span>
+        <span class="tag">Skill 2</span>
+        <span class="tag">Skill 3</span>
+        <span class="tag">Skill 4</span>
+        <span class="tag">Skill 5</span>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
