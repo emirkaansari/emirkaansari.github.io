@@ -2,240 +2,369 @@
 <title>Soulit Prototype</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500..800&family=Instrument+Sans:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lilita+One&family=Baloo+2:wght@500;600;700;800&display=swap">
 <style>
-/* Layout: one phone-sized stage centred on a night ground; screens swap inside it.
-   Single deliberate dark world (a late-night game), so no light variant. */
+/* Layout: a phone-sized game arena under a night sky; a HUD on top, one scene at a time.
+   One deliberate world (a late-night game show: Fall Guys platforms, Kahoot tiles), so no light variant. */
 :root {
-  --ground: #0e0c12;
-  --bg: #17131d;
-  --surface: #211b29;
-  --surface-2: #2b2335;
-  --line: #3b3147;
-  --fg: #f5eee7;
-  --muted: #a99db4;
-  --ember: #ff8a5b;
-  --on-ember: #24110a;
-  --ember-soft: rgba(255, 138, 91, 0.15);
-  --spark: #ffc857;
-  --spark-soft: rgba(255, 200, 87, 0.16);
-  --sync: #8fd3c1;
-  --sync-soft: rgba(143, 211, 193, 0.15);
-  --o1: #e8705f; --o2: #6a93ec; --o3: #e3b04b; --o4: #55b48e;
-  --display: "Bricolage Grotesque", "Avenir Next", system-ui, sans-serif;
-  --body: "Instrument Sans", "Helvetica Neue", system-ui, sans-serif;
-  --mono: "DM Mono", ui-monospace, Menlo, monospace;
+  --ground: #110724;
+  --sky: #22104a;
+  --sky-2: #2c1561;
+  --sky-3: #3d1f80;
+  --shadow: #0c041d;
+  --ink: #fff8ec;
+  --muted: #c6b8ec;
+  --dark-ink: #1c0f38;
+  --pink: #ff4fa3; --pink-d: #b92671;
+  --yellow: #ffd23f; --yellow-d: #c4930c;
+  --mint: #3ddc97; --mint-d: #1b9762;
+  --blue: #4cc9f0; --blue-d: #1a86ad;
+  --coral: #ff6b4a; --coral-d: #bd3e1c;
+  --tile: #ff9fd0; --tile-d: #bf4f8d;
+  --glass: rgba(12, 4, 29, 0.55);
+  --display: "Lilita One", "Arial Rounded MT Bold", system-ui, sans-serif;
+  --body: "Baloo 2", "Trebuchet MS", system-ui, sans-serif;
   color-scheme: dark;
 }
 html, body { height: 100%; }
 body {
-  background: var(--ground); color: var(--fg);
-  font-family: var(--body); font-size: 15px; line-height: 1.45;
+  background-color: var(--ground);
+  background-image: radial-gradient(1px 1px at 20% 30%, rgba(255,255,255,.5), transparent 60%),
+    radial-gradient(1px 1px at 70% 60%, rgba(255,255,255,.4), transparent 60%),
+    radial-gradient(1.5px 1.5px at 40% 80%, rgba(255,255,255,.35), transparent 60%);
+  background-size: 180px 180px;
+  color: var(--ink); font-family: var(--body); font-size: 16px; line-height: 1.35;
   display: flex; justify-content: center; align-items: center;
   padding-inline: 16px; padding-block: 16px; box-sizing: border-box;
 }
 *, *::before, *::after { box-sizing: border-box; }
 button { font: inherit; color: inherit; }
-:focus-visible { outline: 2px solid var(--spark); outline-offset: 2px; }
+:focus-visible { outline: 3px solid var(--yellow); outline-offset: 3px; }
+em { font-style: normal; color: var(--yellow); }
 
 .phone {
-  width: 100%; max-width: 400px; height: 100%; max-height: 840px;
-  background: var(--bg); border: 1px solid var(--line); border-radius: 28px;
-  overflow: hidden; display: flex; flex-direction: column; position: relative;
+  width: 100%; max-width: 400px; height: 100%; max-height: 840px; position: relative;
+  background-color: var(--sky);
+  background-image: radial-gradient(120% 60% at 50% 0%, var(--sky-3), transparent 70%),
+    radial-gradient(1.5px 1.5px at 15% 20%, rgba(255,255,255,.6), transparent 60%),
+    radial-gradient(1px 1px at 80% 12%, rgba(255,255,255,.5), transparent 60%),
+    radial-gradient(1px 1px at 60% 45%, rgba(255,255,255,.35), transparent 60%);
+  background-size: 100% 100%, 140px 140px, 160px 160px, 120px 120px;
+  border: 3px solid #4a2a8f; border-radius: 32px; box-shadow: 0 0 0 6px var(--shadow), 0 30px 60px rgba(0,0,0,.5);
+  overflow: hidden; display: flex; flex-direction: column;
 }
-.bar {
-  display: flex; align-items: center; justify-content: space-between; gap: 12px;
-  padding: 14px 20px 10px; border-bottom: 1px solid var(--line); flex: none;
-}
-.brand { font-family: var(--display); font-weight: 800; font-size: 18px; letter-spacing: -0.02em; }
-.brand b { color: var(--ember); font-weight: 800; }
-.rounds { display: flex; gap: 5px; }
-.rounds i { width: 18px; height: 4px; border-radius: 2px; background: var(--line); display: block; }
-.rounds i.done { background: var(--ember); }
-.rounds i.now { background: var(--fg); }
-.count { font-family: var(--mono); font-size: 13px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.phone.shake { animation: shake .45s; }
 
-.screen { flex: 1; min-height: 0; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 18px; }
-.screen.center { justify-content: center; }
+/* HUD */
+.hud { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 12px 14px 6px; flex: none; }
+.hud-r { display: flex; gap: 6px; align-items: center; }
+.brand { font-family: var(--display); font-size: 22px; letter-spacing: .01em; }
+.brand b, .logo b { color: var(--pink); font-weight: 400; }
+.pill {
+  background: var(--glass); border: 2px solid rgba(255,255,255,.14); border-radius: 999px;
+  padding: 3px 11px; font-family: var(--display); font-size: 16px; display: inline-flex; align-items: center; gap: 6px;
+  font-variant-numeric: tabular-nums; cursor: default;
+}
+.pill.icon { padding: 5px 8px; cursor: pointer; }
+.pill svg { width: 16px; height: 16px; display: block; }
+.pill.spark { color: var(--yellow); }
+.pill.spark.used { color: var(--muted); opacity: .6; }
+.mini-bean { width: 10px; height: 15px; border-radius: 6px; background: var(--pink); display: inline-block; box-shadow: inset -2px -2px 0 rgba(0,0,0,.2); }
+.pips { display: flex; gap: 6px; align-items: center; }
+.pips i { width: 14px; height: 14px; border-radius: 50%; background: rgba(255,255,255,.12); border: 2px solid rgba(255,255,255,.2); display: block; }
+.pips i.done { background: var(--yellow); border-color: var(--yellow-d); }
+.pips i.now { background: var(--pink); border-color: #fff; animation: pulse 1s ease-in-out infinite; }
+
+/* Scenes */
+.scene { flex: 1; min-height: 0; overflow-y: auto; overflow-x: hidden; padding: 8px 18px 22px; display: flex; flex-direction: column; gap: 16px; position: relative; }
+.scene.center { justify-content: center; text-align: center; }
 .grow { flex: 1; }
-
-h1, h2, h3 { font-family: var(--display); letter-spacing: -0.02em; margin: 0; text-wrap: balance; }
-h1 { font-size: 34px; line-height: 1.05; font-weight: 800; }
-h2 { font-size: 26px; line-height: 1.12; font-weight: 700; }
-h3 { font-size: 13px; font-family: var(--body); font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
 p { margin: 0; }
 .muted { color: var(--muted); }
-.small { font-size: 13px; }
-.eyebrow { font-family: var(--mono); font-size: 12px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--ember); }
-
-.btn {
-  display: block; width: 100%; border: 0; border-radius: 14px; cursor: pointer;
-  padding: 15px 18px; font-weight: 600; font-size: 16px;
-  background: var(--ember); color: var(--on-ember);
+.small { font-size: 14px; }
+.fine { font-size: 13px; color: var(--muted); text-align: center; }
+.eyebrow { font-family: var(--display); font-size: 15px; letter-spacing: .06em; text-transform: uppercase; color: var(--blue); }
+.slam {
+  font-family: var(--display); font-size: 56px; line-height: .92; text-transform: uppercase; letter-spacing: .01em;
+  text-shadow: 0 5px 0 var(--shadow); text-wrap: balance; animation: slam .45s cubic-bezier(.2,1.5,.4,1) both;
 }
-.btn:disabled { opacity: 0.4; cursor: default; }
-.btn.ghost { background: transparent; color: var(--fg); border: 1px solid var(--line); }
-.btn.quiet { background: transparent; color: var(--muted); padding: 10px; font-weight: 500; }
-.actions { display: flex; flex-direction: column; gap: 8px; }
+.slam.sm { font-size: 34px; text-shadow: 0 4px 0 var(--shadow); }
+.slam.huge { font-size: 84px; }
+.slam.y { color: var(--yellow); }
+.slam.m { color: var(--mint); }
+.slam.p { color: var(--pink); }
+.line { font-family: var(--display); font-size: 25px; line-height: 1.12; font-weight: 400; margin: 0; text-wrap: balance; }
+.lede { font-size: 18px; line-height: 1.4; font-weight: 600; }
+.sticker {
+  display: inline-block; align-self: center; font-family: var(--display); font-size: 20px; text-transform: lowercase;
+  background: var(--yellow); color: var(--dark-ink); padding: 4px 14px 2px; border-radius: 12px; transform: rotate(-4deg);
+  box-shadow: 0 4px 0 var(--yellow-d); animation: slam .5s .15s cubic-bezier(.2,1.5,.4,1) both;
+}
+.sticker.alt { background: var(--mint); box-shadow: 0 4px 0 var(--mint-d); transform: rotate(3deg); text-transform: none; font-size: 16px; }
+ul.rules { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 8px; text-align: left; }
+ul.rules li { background: var(--glass); border-radius: 14px; padding: 9px 12px; font-size: 15px; font-weight: 600; display: flex; gap: 10px; align-items: flex-start; }
+ul.rules li b { font-family: var(--display); font-weight: 400; color: var(--yellow); min-width: 18px; }
 
-/* Intro */
-.logo { font-family: var(--display); font-weight: 800; font-size: 64px; letter-spacing: -0.05em; line-height: 0.9; }
-.logo b { color: var(--ember); font-weight: 800; }
-.lede { font-size: 17px; line-height: 1.5; max-width: 32ch; }
-.fine { font-size: 12px; color: var(--muted); text-align: center; }
+/* Buttons */
+.btn3d {
+  display: block; width: 100%; border: 0; border-radius: 18px; cursor: pointer;
+  padding: 14px 18px 11px; font-family: var(--display); font-size: 23px; letter-spacing: .02em; text-transform: uppercase;
+  background: var(--yellow); color: var(--dark-ink); box-shadow: 0 6px 0 var(--yellow-d), 0 12px 20px rgba(0,0,0,.35);
+  transition: transform .08s, box-shadow .08s, filter .2s;
+}
+.btn3d:active:not(:disabled) { transform: translateY(5px); box-shadow: 0 1px 0 var(--yellow-d), 0 4px 8px rgba(0,0,0,.3); }
+.btn3d.pink { background: var(--pink); color: #fff; box-shadow: 0 6px 0 var(--pink-d), 0 12px 20px rgba(0,0,0,.35); }
+.btn3d.pink:active:not(:disabled) { box-shadow: 0 1px 0 var(--pink-d); }
+.btn3d.ghost { background: rgba(255,255,255,.1); color: var(--ink); box-shadow: 0 6px 0 rgba(0,0,0,.35); font-size: 19px; }
+.btn3d.ghost:active:not(:disabled) { box-shadow: 0 1px 0 rgba(0,0,0,.35); }
+.btn3d:disabled { filter: grayscale(.8) brightness(.65); cursor: default; }
+.btn3d.ready-pop { animation: pop .4s cubic-bezier(.3,1.6,.5,1) both; }
+.actions { display: flex; flex-direction: column; gap: 12px; }
+.linkbtn { background: none; border: 0; color: var(--muted); cursor: pointer; font-weight: 700; padding: 4px; text-decoration: underline; text-underline-offset: 3px; }
 
-/* Form */
-.field { display: flex; flex-direction: column; gap: 8px; }
-.field label, .field .lbl { font-size: 13px; font-weight: 600; color: var(--muted); }
+/* Arena: beans on hexagon tiles */
+.stage { position: relative; border-radius: 26px; overflow: hidden; background: linear-gradient(to bottom, rgba(255,255,255,.04), rgba(255,79,163,.16)); }
+.stage.tall { min-height: 260px; display: flex; flex-direction: column; justify-content: center; }
+.slime { position: absolute; left: -10%; right: -10%; bottom: -18px; height: 46px; background: var(--pink); opacity: .35; border-radius: 50%; filter: blur(2px); }
+.arena { position: relative; z-index: 1; display: flex; flex-wrap: wrap; justify-content: center; align-content: center; gap: 8px 4px; padding: 16px 8px 18px; min-height: 150px; }
+.pl { --w: 40px; display: flex; flex-direction: column; align-items: center; width: calc(var(--w) * 1.42); position: relative; }
+.arena.mid .pl { --w: 30px; }
+.arena.dense .pl { --w: 21px; }
+.arena.big .pl { --w: 56px; }
+.pl .bean { width: var(--w); height: calc(var(--w) * 60 / 44); display: block; position: relative; z-index: 1; transform-origin: 50% 95%; animation: wobble 1.9s ease-in-out infinite; animation-delay: var(--d, 0s); }
+.pl .hexw { display: block; filter: drop-shadow(0 4px 0 var(--tile-d)); margin-top: calc(var(--w) * -0.2); }
+.pl .hex { display: block; width: calc(var(--w) * 1.36); height: calc(var(--w) * 0.44); background: var(--tile); clip-path: polygon(22% 0, 78% 0, 100% 50%, 78% 100%, 22% 100%, 0 50%); }
+.pl .nm { font-family: var(--display); font-size: 13px; margin-top: 7px; max-width: 70px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-shadow: 0 2px 0 var(--shadow); }
+.arena.dense .nm { display: none; }
+.arena.mid .nm { font-size: 11px; }
+.pl.me .hex { background: var(--yellow); }
+.pl.me .hexw { filter: drop-shadow(0 4px 0 var(--yellow-d)); }
+.pl.me .nm { color: var(--yellow); }
+.pl.synced .hex { background: var(--mint); }
+.pl.synced .hexw { filter: drop-shadow(0 4px 0 var(--mint-d)); }
+.pl.sparked .hex { background: var(--yellow); }
+.pl.sparked::before { content: "\2605"; position: absolute; top: -16px; color: var(--yellow); font-size: 16px; z-index: 2; text-shadow: 0 2px 0 var(--shadow); animation: pulse 1s infinite; }
+.pl.falling { animation: plfall 1.15s cubic-bezier(.55, 0, .9, .45) forwards; z-index: 0; }
+.pl.falling.slow { animation-duration: 2.8s; }
+.pl.popin { animation: pop .35s cubic-bezier(.3, 1.6, .5, 1) both; }
+.pl.dropin { animation: dropin 1.1s cubic-bezier(.2, .9, .3, 1.25) both; }
+
+/* Matchmaking */
+.mm-count { font-family: var(--display); font-size: 48px; line-height: 1; font-variant-numeric: tabular-nums; }
+.mm-count small { font-size: 22px; color: var(--muted); }
+
+/* Build your bean */
+.preview { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 6px 0 0; }
+.preview .pl { --w: 74px; }
+.swatches { display: flex; gap: 10px; justify-content: center; }
+.sw { width: 34px; height: 34px; border-radius: 50%; border: 3px solid transparent; cursor: pointer; box-shadow: 0 3px 0 rgba(0,0,0,.35); }
+.sw.on { border-color: #fff; transform: scale(1.12); }
+.field { display: flex; flex-direction: column; gap: 8px; text-align: left; }
+.field .lbl { font-family: var(--display); font-size: 16px; letter-spacing: .03em; color: var(--muted); text-transform: uppercase; }
 input[type="text"], textarea {
-  width: 100%; background: var(--surface); border: 1px solid var(--line); border-radius: 12px;
-  color: var(--fg); font: inherit; padding: 12px 14px;
+  width: 100%; background: var(--ink); border: 0; border-radius: 16px; color: var(--dark-ink);
+  font: 700 17px var(--body); padding: 12px 14px; box-shadow: inset 0 -4px 0 rgba(0,0,0,.12);
 }
-textarea { resize: none; min-height: 92px; }
-input[type="text"]:focus, textarea:focus { border-color: var(--ember); outline: none; }
+textarea { resize: none; min-height: 92px; line-height: 1.35; }
+input[type="text"]:focus, textarea:focus { outline: 3px solid var(--pink); }
 .chips { display: flex; flex-wrap: wrap; gap: 8px; }
 .chip {
-  border: 1px solid var(--line); background: var(--surface); border-radius: 999px;
-  padding: 8px 14px; font-size: 14px; cursor: pointer;
+  border: 0; background: rgba(255,255,255,.1); border-radius: 14px; padding: 8px 13px 6px; font-weight: 800; font-size: 15px; cursor: pointer;
+  box-shadow: 0 4px 0 rgba(0,0,0,.35); transition: transform .08s;
 }
-.chip.on { background: var(--ember-soft); border-color: var(--ember); color: var(--fg); }
-.range-row { display: flex; align-items: center; gap: 12px; }
-.range-row input { flex: 1; min-width: 0; accent-color: var(--ember); }
-.range-val { font-family: var(--mono); font-size: 14px; min-width: 64px; text-align: right; font-variant-numeric: tabular-nums; }
-.hint { font-size: 13px; color: var(--spark); min-height: 18px; }
+.chip:active { transform: translateY(3px); box-shadow: 0 1px 0 rgba(0,0,0,.35); }
+.chip.on { background: var(--pink); color: #fff; box-shadow: 0 4px 0 var(--pink-d); }
+.range-row { display: flex; align-items: center; gap: 10px; }
+.range-row input { flex: 1; min-width: 0; accent-color: var(--pink); }
+.range-val { font-family: var(--display); font-size: 20px; min-width: 70px; text-align: right; font-variant-numeric: tabular-nums; }
+.hint { font-weight: 700; color: var(--yellow); min-height: 20px; text-align: center; }
 
-/* Avatars and platform */
-.tok { display: inline-flex; flex-direction: column; align-items: center; gap: 3px; position: relative; }
-.tok .av { width: 44px; height: 44px; border-radius: 50%; display: block; }
-.tok .av svg { width: 100%; height: 100%; display: block; border-radius: 50%; }
-.tok .nm { font-size: 11px; color: var(--muted); max-width: 56px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.tok.synced .av { box-shadow: 0 0 0 2px var(--bg), 0 0 0 4px var(--sync); }
-.tok.sparked .av { box-shadow: 0 0 0 2px var(--bg), 0 0 0 4px var(--spark); }
-.tok.me .av { box-shadow: 0 0 0 2px var(--bg), 0 0 0 4px var(--ember); }
-.tok.me .nm { color: var(--fg); font-weight: 600; }
-.tok.crowd .dot { width: 16px; height: 16px; border-radius: 50%; background: var(--line); display: block; margin: 4px; }
-.stage { position: relative; overflow: hidden; border-radius: 22px; padding-bottom: 72px; margin-bottom: -60px; }
-.platform {
-  position: relative; background: var(--surface); border-radius: 22px;
-  border-bottom: 8px solid var(--surface-2);
-  padding: 18px 14px; min-height: 150px;
-  display: flex; flex-wrap: wrap; gap: 10px 8px; justify-content: center; align-content: center; align-items: center;
-}
-.platform.big .tok .av { width: 52px; height: 52px; }
-.split-meta { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
-.bigcount { font-family: var(--mono); font-size: 40px; font-weight: 500; font-variant-numeric: tabular-nums; letter-spacing: -0.02em; }
-.bigcount small { font-size: 15px; color: var(--muted); margin-left: 6px; letter-spacing: 0; }
-.notes { display: flex; flex-direction: column; gap: 8px; min-height: 20px; }
-.note { background: var(--surface); border-radius: 12px; padding: 10px 12px; font-size: 14px; border-left: 3px solid var(--line); animation: rise .4s ease both; }
-.note.sp { border-left-color: var(--spark); }
-.note.back { border-left-color: var(--sync); }
-
-@keyframes fall {
-  0% { transform: translateY(0) rotate(0); opacity: 1; }
-  15% { transform: translateY(-8px) rotate(-6deg); opacity: 1; }
-  100% { transform: translateY(320px) rotate(38deg); opacity: 0; }
-}
-@keyframes dropin {
-  0% { transform: translateY(-220px); opacity: 0; }
-  70% { transform: translateY(6px); opacity: 1; }
-  100% { transform: none; opacity: 1; }
-}
-@keyframes rise { from { transform: translateY(6px); opacity: 0; } to { transform: none; opacity: 1; } }
-@keyframes glow { 0%, 100% { box-shadow: 0 0 0 2px var(--bg), 0 0 0 4px var(--sync); } 50% { box-shadow: 0 0 0 2px var(--bg), 0 0 0 9px var(--sync-soft); } }
-.falling { animation: fall 0.9s cubic-bezier(0.5, 0, 0.9, 0.4) forwards; }
-.falling.slow { animation-duration: 2.6s; }
-.dropin { animation: dropin 1s cubic-bezier(0.2, 0.8, 0.3, 1.2) both; }
+/* Countdown */
+.cd { font-family: var(--display); font-size: 170px; line-height: 1; color: var(--yellow); text-shadow: 0 10px 0 var(--shadow); }
+.cd.go { color: var(--mint); font-size: 130px; }
+.cd.anim { animation: countpop .62s cubic-bezier(.2,1.4,.4,1) both; }
 
 /* Question */
-.qcard { background: var(--surface); border-radius: 20px; padding: 22px 20px; display: flex; flex-direction: column; gap: 14px; }
-.tag { display: inline-block; font-size: 12px; font-weight: 600; border-radius: 999px; padding: 4px 10px; background: var(--sync-soft); color: var(--sync); align-self: flex-start; }
-.tag.wild { background: var(--spark-soft); color: var(--spark); }
-.tag.strong { background: var(--ember-soft); color: var(--ember); }
-.timer { display: flex; align-items: center; gap: 12px; }
-.track { flex: 1; height: 6px; border-radius: 3px; background: var(--surface-2); overflow: hidden; }
-.track i { display: block; height: 100%; background: var(--ember); transform-origin: left; }
-.tnum { font-family: var(--mono); font-size: 15px; width: 28px; text-align: right; font-variant-numeric: tabular-nums; }
-.opts { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.qwrap { position: relative; padding-top: 18px; }
+.qcard { background: var(--ink); color: var(--dark-ink); border-radius: 24px; padding: 20px 18px 18px; box-shadow: 0 7px 0 var(--shadow); display: flex; flex-direction: column; gap: 8px; animation: slam .4s cubic-bezier(.2,1.4,.4,1) both; }
+.qcard .eyebrow { color: var(--pink); padding-right: 64px; }
+.qcard h2 { font-family: var(--display); font-weight: 400; font-size: 27px; line-height: 1.08; margin: 0; padding-right: 8px; text-wrap: balance; }
+.ring { position: absolute; top: 0; right: 10px; width: 70px; height: 70px; z-index: 2; }
+.ring svg { width: 100%; height: 100%; display: block; transform: rotate(-90deg); }
+.ring .bg { fill: var(--dark-ink); stroke: rgba(255,255,255,.12); stroke-width: 7; }
+.ring .fg { fill: none; stroke: var(--mint); stroke-width: 7; stroke-linecap: round; transition: stroke .2s; }
+.ring.hot .fg { stroke: var(--coral); }
+.ring.hot { animation: pulse .5s ease-in-out infinite; }
+.ring span { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-family: var(--display); font-size: 27px; color: #fff; font-variant-numeric: tabular-nums; }
+.tag-anchor { align-self: flex-start; font-family: var(--display); font-size: 13px; background: var(--mint); color: var(--dark-ink); border-radius: 8px; padding: 2px 8px 0; }
+.opts { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 .opt {
-  background: var(--surface); border: 1px solid var(--line); border-radius: 16px; cursor: pointer;
-  padding: 14px 12px; min-height: 96px; text-align: left; display: flex; flex-direction: column; justify-content: space-between; gap: 10px;
-  font-size: 15px; font-weight: 500; line-height: 1.3;
+  --c: var(--coral); --cd: var(--coral-d);
+  background: var(--c); color: #fff; border: 0; border-radius: 20px; box-shadow: 0 6px 0 var(--cd); cursor: pointer;
+  min-height: 112px; padding: 12px 12px 10px; text-align: left; display: flex; flex-direction: column; justify-content: space-between; gap: 8px;
+  font-weight: 800; font-size: 15.5px; line-height: 1.15; transition: transform .08s; animation: pop .35s cubic-bezier(.3,1.6,.5,1) both;
 }
-.opt .g { font-size: 16px; line-height: 1; }
-.opt:nth-child(1) .g { color: var(--o1); } .opt:nth-child(2) .g { color: var(--o2); }
-.opt:nth-child(3) .g { color: var(--o3); } .opt:nth-child(4) .g { color: var(--o4); }
-.opt:hover { border-color: var(--muted); }
-.slider-wrap { display: flex; flex-direction: column; gap: 10px; padding: 10px 0; }
-.slider-wrap input { width: 100%; accent-color: var(--ember); }
-.slider-ends { display: flex; justify-content: space-between; font-family: var(--display); font-weight: 700; font-size: 18px; }
-.play { display: flex; align-items: center; gap: 12px; background: var(--surface-2); border-radius: 14px; padding: 12px 14px; }
-.play button { width: 40px; height: 40px; border-radius: 50%; border: 0; background: var(--ember); color: var(--on-ember); cursor: pointer; font-size: 14px; flex: none; }
-.wave { display: flex; gap: 3px; align-items: center; height: 28px; flex: 1; min-width: 0; overflow: hidden; }
-.wave i { width: 3px; border-radius: 2px; background: var(--muted); display: block; flex: none; }
-.wave.on i { background: var(--ember); }
+.opt:nth-child(2) { --c: var(--blue); --cd: var(--blue-d); animation-delay: .05s; }
+.opt:nth-child(3) { --c: var(--yellow); --cd: var(--yellow-d); color: var(--dark-ink); animation-delay: .1s; }
+.opt:nth-child(4) { --c: var(--mint); --cd: var(--mint-d); color: var(--dark-ink); animation-delay: .15s; }
+.opt:active { transform: translateY(5px); box-shadow: 0 1px 0 var(--cd); }
+.opt svg { width: 24px; height: 24px; display: block; }
+.slider-box { background: var(--glass); border-radius: 20px; padding: 18px 16px; display: flex; flex-direction: column; gap: 12px; }
+.slider-box input { width: 100%; accent-color: var(--pink); height: 28px; }
+.slider-ends { display: flex; justify-content: space-between; font-family: var(--display); font-size: 22px; }
+.slider-ends span:first-child { color: var(--blue); } .slider-ends span:last-child { color: var(--pink); }
+.player { display: flex; align-items: center; gap: 12px; background: var(--glass); border-radius: 18px; padding: 10px 12px; }
+.player button { width: 46px; height: 46px; border-radius: 50%; border: 0; background: var(--pink); color: #fff; cursor: pointer; box-shadow: 0 4px 0 var(--pink-d); flex: none; font-size: 16px; }
+.wave { display: flex; gap: 3px; align-items: center; height: 34px; flex: 1; min-width: 0; overflow: hidden; }
+.wave i { width: 4px; border-radius: 2px; background: rgba(255,255,255,.3); display: block; flex: none; }
+.wave.on i { background: var(--pink); animation: eq .5s ease-in-out infinite alternate; }
+.wave.on i:nth-child(3n) { animation-delay: .15s; } .wave.on i:nth-child(3n+1) { animation-delay: .3s; }
 
-/* Sync + spark */
-.sync-hero { display: flex; justify-content: center; gap: 14px; padding: 8px 0; }
-.sync-hero .tok .av { width: 72px; height: 72px; animation: glow 2.4s ease-in-out infinite; }
-.sync-hero .tok .nm { font-size: 14px; color: var(--fg); max-width: 90px; }
-.cands { display: grid; grid-template-columns: repeat(auto-fill, minmax(76px, 1fr)); gap: 12px; }
-.cand { background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 12px 6px 10px; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 6px; }
-.cand .tok .av { width: 52px; height: 52px; }
-.cand.on { border-color: var(--spark); background: var(--spark-soft); }
+.stamp { position: absolute; inset: 0; z-index: 30; display: flex; align-items: center; justify-content: center; pointer-events: none; background: rgba(12,4,29,.45); }
+.stamp span {
+  font-family: var(--display); font-size: 50px; color: var(--yellow); border: 6px solid var(--yellow); border-radius: 18px;
+  padding: 6px 18px 2px; background: rgba(12,4,29,.75); text-shadow: 0 4px 0 var(--shadow); transform: rotate(-8deg);
+  animation: stamp .38s cubic-bezier(.2,1.6,.4,1) both;
+}
+.stamp.time span { color: var(--coral); border-color: var(--coral); }
 
-/* Finalists + reveal */
-.fcards { display: flex; flex-direction: column; gap: 10px; }
-.fcard { display: flex; gap: 14px; align-items: center; background: var(--surface); border: 1px solid var(--line); border-radius: 18px; padding: 14px; cursor: pointer; text-align: left; width: 100%; }
-.fcard .tok .av { width: 58px; height: 58px; }
-.fcard .info { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 4px; }
-.fcard .name { font-family: var(--display); font-weight: 700; font-size: 19px; }
-.status { font-size: 12px; color: var(--muted); }
-.status.sent { color: var(--sync); }
-.window { display: flex; justify-content: space-between; align-items: center; background: var(--surface); border-radius: 14px; padding: 10px 14px; font-size: 13px; }
-.window .mono { font-family: var(--mono); font-variant-numeric: tabular-nums; color: var(--fg); }
-.crown { font-size: 13px; color: var(--spark); font-family: var(--mono); letter-spacing: 0.08em; text-transform: uppercase; }
+/* Sync + qualified rays */
+.rays-wrap { position: relative; display: flex; flex-direction: column; align-items: center; gap: 12px; padding: 22px 0 10px; }
+.rays { position: absolute; left: 50%; top: 50%; width: 560px; height: 560px; margin: -280px 0 0 -280px; z-index: 0; pointer-events: none;
+  background: repeating-conic-gradient(from 0deg, rgba(61,220,151,.16) 0 9deg, transparent 9deg 18deg);
+  -webkit-mask: radial-gradient(circle, #000 20%, transparent 62%); mask: radial-gradient(circle, #000 20%, transparent 62%);
+  animation: spin 16s linear infinite; }
+.rays.gold { background: repeating-conic-gradient(from 0deg, rgba(255,210,63,.2) 0 9deg, transparent 9deg 18deg); }
+.rays.grey { background: repeating-conic-gradient(from 0deg, rgba(255,255,255,.05) 0 9deg, transparent 9deg 18deg); }
+.rays-wrap > *:not(.rays) { position: relative; z-index: 1; }
+.combo { font-family: var(--display); font-size: 18px; color: var(--dark-ink); background: var(--mint); border-radius: 12px; padding: 4px 12px 2px; box-shadow: 0 4px 0 var(--mint-d); animation: slam .5s .2s cubic-bezier(.2,1.5,.4,1) both; transform: rotate(-3deg); }
 
-.prof-head { display: flex; gap: 16px; align-items: center; }
-.prof-head .tok .av { width: 84px; height: 84px; }
-.backlink { background: none; border: 0; color: var(--muted); cursor: pointer; padding: 0; font-size: 14px; align-self: flex-start; }
-.section { display: flex; flex-direction: column; gap: 10px; }
-.timeline { display: flex; flex-direction: column; border-left: 2px solid var(--line); margin-left: 6px; }
-.tl { position: relative; padding: 0 0 14px 18px; }
-.tl::before { content: ""; position: absolute; left: -7px; top: 4px; width: 12px; height: 12px; border-radius: 50%; background: var(--bg); border: 2px solid var(--line); }
-.tl.hit::before { border-color: var(--sync); background: var(--sync); }
-.tl.sp::before { border-color: var(--spark); background: var(--spark); }
-.tl .r { font-family: var(--mono); font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; }
-.tl .ev { font-size: 14px; }
-.compare { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-.compare div { background: var(--surface); border-radius: 12px; padding: 10px 12px; font-size: 14px; min-width: 0; }
-.compare b { display: block; font-size: 11px; color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 4px; }
-.compare .same { outline: 1px solid var(--sync); }
-.quote { background: var(--surface); border-radius: 12px; padding: 12px 14px; }
-.quote .q { font-size: 12px; color: var(--muted); margin-bottom: 4px; }
-.quote .a { font-size: 15px; }
+/* Spark */
+.token { width: 92px; height: 92px; align-self: center; border-radius: 50%; display: flex; align-items: center; justify-content: center;
+  background: radial-gradient(circle at 35% 30%, #fff3b0, var(--yellow) 45%, var(--yellow-d)); box-shadow: 0 6px 0 #8a6606, 0 0 40px rgba(255,210,63,.55); animation: float 2.2s ease-in-out infinite; }
+.token svg { width: 46px; height: 46px; }
+.token.thrown { animation: throw .7s cubic-bezier(.5,0,.8,.4) forwards; }
+.cands { display: grid; grid-template-columns: repeat(auto-fill, minmax(84px, 1fr)); gap: 12px; }
+.cand { background: var(--glass); border: 3px solid transparent; border-radius: 20px; padding: 10px 4px 8px; cursor: pointer; display: flex; justify-content: center; box-shadow: 0 5px 0 rgba(0,0,0,.35); }
+.cand .pl { --w: 44px; }
+.cand .pl .hexw { display: none; }
+.cand.on { border-color: var(--yellow); background: rgba(255,210,63,.15); }
 
+/* Split */
+.split-head { display: flex; justify-content: space-between; align-items: flex-end; gap: 12px; }
+.bigcount { font-family: var(--display); font-size: 58px; line-height: .9; font-variant-numeric: tabular-nums; color: var(--yellow); text-shadow: 0 5px 0 var(--shadow); }
+.bigcount.bump { animation: bump .25s; }
+.bigcount small { font-size: 17px; color: var(--muted); margin-left: 4px; text-shadow: none; }
+.notes { display: flex; flex-direction: column; gap: 8px; min-height: 10px; }
+.callout { display: flex; gap: 10px; align-items: center; background: var(--glass); border-radius: 16px; padding: 9px 12px; font-weight: 700; font-size: 15px; text-align: left; animation: slidein .35s cubic-bezier(.2,1.4,.4,1) both; border: 2px solid rgba(255,255,255,.1); }
+.callout b { font-family: var(--display); font-weight: 400; font-size: 13px; padding: 2px 8px 0; border-radius: 8px; background: rgba(255,255,255,.12); white-space: nowrap; }
+.callout.sp b { background: var(--yellow); color: var(--dark-ink); }
+.callout.back { border-color: var(--mint); }
+.callout.back b { background: var(--mint); color: var(--dark-ink); }
+
+/* Finalist cards */
+.fan { display: flex; flex-direction: column; gap: 14px; }
+.card3d { perspective: 900px; }
+.card-inner { position: relative; display: block; width: 100%; height: 132px; border: 0; padding: 0; background: none; cursor: pointer; transform-style: preserve-3d; transition: transform .65s cubic-bezier(.3,1.35,.5,1); text-align: left; }
+.card3d.flipped .card-inner { transform: rotateY(180deg); }
+.face { position: absolute; inset: 0; border-radius: 22px; backface-visibility: hidden; -webkit-backface-visibility: hidden; display: flex; align-items: center; gap: 14px; padding: 12px 16px; box-shadow: 0 7px 0 var(--shadow); overflow: hidden; }
+.face.backside { background: var(--pink); background-image: repeating-linear-gradient(45deg, rgba(255,255,255,.12) 0 12px, transparent 12px 24px); justify-content: space-between; border: 4px solid #fff; }
+.cb-logo { font-family: var(--display); font-size: 30px; color: #fff; text-shadow: 0 3px 0 var(--pink-d); }
+.cb-logo b { color: var(--yellow) !important; }
+.cb-q { font-family: var(--display); font-size: 62px; color: var(--yellow); text-shadow: 0 4px 0 var(--pink-d); line-height: 1; }
+.cb-tap { position: absolute; bottom: 10px; left: 16px; font-family: var(--display); font-size: 13px; letter-spacing: .06em; color: #fff; opacity: .9; }
+.face.frontside { transform: rotateY(180deg); background: var(--sky-3); border: 4px solid var(--yellow); }
+.face.frontside.holo { border-color: #fff; color: var(--dark-ink);
+  background: linear-gradient(115deg, #ffb3dc, #b3ecff, #fff1a8, #c4ffe2, #e2c4ff, #ffb3dc); background-size: 400% 400%; animation: holo 5s linear infinite; }
+.face .pl { --w: 50px; }
+.face .pl .hexw { display: none; }
+.face .info { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
+.face .name { font-family: var(--display); font-size: 25px; line-height: 1; }
+.badge { align-self: flex-start; font-family: var(--display); font-size: 12px; letter-spacing: .05em; text-transform: uppercase; border-radius: 8px; padding: 2px 8px 0; background: var(--yellow); color: var(--dark-ink); }
+.holo .badge { background: var(--dark-ink); color: #fff; }
+.face .why { font-size: 13.5px; font-weight: 700; line-height: 1.2; }
+.frontside:not(.holo) .why { color: var(--muted); }
+.status { font-size: 12.5px; font-weight: 800; text-transform: uppercase; letter-spacing: .04em; }
+.status.sent { color: var(--mint); }
+.holo .status.sent { color: #0d7a4c; }
+
+/* Profile */
+.backlink { align-self: flex-start; background: var(--glass); border: 0; border-radius: 999px; padding: 6px 14px 4px; font-family: var(--display); font-size: 15px; cursor: pointer; }
+.prof { border-radius: 24px; padding: 18px; display: flex; flex-direction: column; gap: 10px; box-shadow: 0 7px 0 var(--shadow); background: var(--sky-3); border: 4px solid var(--yellow); }
+.prof.holo { border-color: #fff; color: var(--dark-ink); background: linear-gradient(115deg, #ffb3dc, #b3ecff, #fff1a8, #c4ffe2, #e2c4ff, #ffb3dc); background-size: 400% 400%; animation: holo 6s linear infinite; }
+.prof-top { display: flex; gap: 14px; align-items: center; }
+.prof .pl { --w: 66px; }
+.prof .pl .hexw { display: none; }
+.prof .name { font-family: var(--display); font-size: 32px; line-height: 1; }
+.prof .meta { font-weight: 700; font-size: 14px; opacity: .8; }
+.prof .bio { font-weight: 600; font-size: 16px; }
+.sec { display: flex; flex-direction: column; gap: 10px; }
+.sec-h { font-family: var(--display); font-size: 20px; letter-spacing: .02em; text-transform: uppercase; color: var(--yellow); text-shadow: 0 3px 0 var(--shadow); }
+.replay { display: flex; flex-direction: column; gap: 6px; }
+.rr { display: flex; gap: 10px; align-items: center; background: var(--glass); border-radius: 14px; padding: 7px 10px; font-weight: 700; font-size: 14.5px; }
+.rr .rn { flex: none; width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-family: var(--display); font-size: 15px; background: rgba(255,255,255,.12); }
+.rr.hit .rn { background: var(--mint); color: var(--dark-ink); }
+.rr.sp .rn { background: var(--yellow); color: var(--dark-ink); }
+.rr .rt { color: var(--muted); font-size: 12px; text-transform: uppercase; letter-spacing: .04em; display: block; }
+.vs { display: grid; grid-template-columns: 1fr auto 1fr; gap: 8px; align-items: center; }
+.bubble { background: var(--ink); color: var(--dark-ink); border-radius: 16px; padding: 10px 12px; font-weight: 700; font-size: 14px; min-width: 0; box-shadow: 0 4px 0 var(--shadow); }
+.bubble b { display: block; font-family: var(--display); font-weight: 400; font-size: 13px; color: var(--pink); text-transform: uppercase; }
+.vs-badge { font-family: var(--display); font-size: 18px; color: var(--yellow); text-shadow: 0 3px 0 var(--shadow); }
+.same-pick { align-self: center; font-family: var(--display); font-size: 16px; background: var(--mint); color: var(--dark-ink); border-radius: 10px; padding: 3px 12px 1px; box-shadow: 0 4px 0 var(--mint-d); transform: rotate(-3deg); }
+.stickers { display: flex; flex-direction: column; gap: 10px; }
+.stk { background: var(--ink); color: var(--dark-ink); border-radius: 18px; padding: 12px 14px; box-shadow: 0 5px 0 var(--shadow); }
+.stk:nth-child(2) { transform: rotate(1deg); } .stk:nth-child(1) { transform: rotate(-1deg); }
+.stk .q { font-family: var(--display); font-size: 14px; color: var(--pink); text-transform: uppercase; letter-spacing: .02em; }
+.stk .a { font-weight: 800; font-size: 16px; line-height: 1.25; }
+.decided { background: var(--glass); border-radius: 16px; padding: 12px 14px; font-weight: 700; border: 2px solid rgba(255,255,255,.12); }
+.decided.sent { border-color: var(--mint); }
+
+/* End */
+.stats { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.stat { background: var(--glass); border-radius: 18px; padding: 12px 14px; display: flex; flex-direction: column; border: 2px solid rgba(255,255,255,.1); }
+.stat .n { font-family: var(--display); font-size: 38px; line-height: 1; color: var(--yellow); font-variant-numeric: tabular-nums; }
+.stat .l { font-weight: 700; font-size: 14px; color: var(--muted); }
+.meter { height: 22px; border-radius: 11px; background: rgba(255,255,255,.1); overflow: hidden; border: 2px solid rgba(255,255,255,.15); }
+.meter i { display: block; height: 100%; width: 15%; background: repeating-linear-gradient(45deg, var(--mint) 0 10px, #5ff0b0 10px 20px); border-radius: 9px; animation: fill 1.2s .3s cubic-bezier(.2,1,.3,1) both; }
+
+/* Overlays */
 .toast {
-  position: absolute; left: 16px; right: 16px; bottom: 16px; background: var(--fg); color: var(--bg);
-  border-radius: 14px; padding: 12px 14px; font-size: 14px; font-weight: 500;
-  transform: translateY(140%); transition: transform 0.3s ease; pointer-events: none;
+  position: absolute; left: 14px; right: 14px; bottom: 14px; z-index: 40; background: var(--ink); color: var(--dark-ink);
+  border-radius: 16px; padding: 12px 14px; font-weight: 800; font-size: 15px; box-shadow: 0 5px 0 var(--shadow);
+  transform: translateY(160%); transition: transform .3s cubic-bezier(.2,1.4,.4,1); pointer-events: none;
 }
 .toast.show { transform: none; }
+.confetti { position: absolute; inset: 0; z-index: 35; pointer-events: none; }
 
-.stats { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
-.stat { background: var(--surface); border-radius: 14px; padding: 12px; display: flex; flex-direction: column; gap: 2px; }
-.stat .n { font-family: var(--mono); font-size: 26px; font-variant-numeric: tabular-nums; }
-.stat .l { font-size: 12px; color: var(--muted); }
-ul.plain { margin: 0; padding-left: 18px; display: flex; flex-direction: column; gap: 6px; }
+@keyframes wobble { 0%, 100% { transform: rotate(-4deg); } 50% { transform: rotate(4deg); } }
+@keyframes pop { 0% { transform: scale(0); } 70% { transform: scale(1.12); } 100% { transform: scale(1); } }
+@keyframes slam { 0% { transform: scale(2.2); opacity: 0; } 100% { opacity: 1; } }
+@keyframes stamp { from { transform: rotate(-8deg) scale(2.6); opacity: 0; } to { transform: rotate(-8deg) scale(1); opacity: 1; } }
+@keyframes countpop { 0% { transform: scale(2.4); opacity: 0; } 35% { transform: scale(1); opacity: 1; } 80% { transform: scale(1); opacity: 1; } 100% { transform: scale(.6); opacity: 0; } }
+@keyframes plfall {
+  0% { transform: none; } 6% { transform: translateX(-3px); } 12% { transform: translateX(3px); } 18% { transform: translateX(-2px); }
+  26% { transform: translateY(-5px); } 100% { transform: translateY(480px) rotate(32deg); opacity: 0; }
+}
+@keyframes dropin { 0% { transform: translateY(-260px); opacity: 0; } 70% { transform: translateY(8px); opacity: 1; } 100% { transform: none; opacity: 1; } }
+@keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.12); } }
+@keyframes spin { to { transform: rotate(360deg); } }
+@keyframes float { 0%, 100% { transform: translateY(0) rotate(-6deg); } 50% { transform: translateY(-8px) rotate(6deg); } }
+@keyframes throw { 0% { transform: none; } 30% { transform: translateY(-30px) scale(1.15); } 100% { transform: translateY(260px) scale(.3); opacity: 0; } }
+@keyframes eq { from { transform: scaleY(.4); } to { transform: scaleY(1.2); } }
+@keyframes bump { 50% { transform: scale(1.25); } }
+@keyframes slidein { from { transform: translateX(-20px); opacity: 0; } to { transform: none; opacity: 1; } }
+@keyframes holo { 0% { background-position: 0% 50%; } 100% { background-position: 400% 50%; } }
+@keyframes shake { 0%, 100% { transform: none; } 20% { transform: translate(-5px, 2px); } 40% { transform: translate(5px, -2px); } 60% { transform: translate(-3px, 1px); } 80% { transform: translate(3px, 0); } }
+@keyframes fill { from { width: 0; } }
 
 @media (prefers-reduced-motion: reduce) {
-  .falling, .falling.slow { animation: none; opacity: 0; transition: opacity 0.3s; }
-  .dropin, .note { animation: none; }
-  .sync-hero .tok .av { animation: none; }
+  *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
+  .pl.falling { opacity: 0; }
 }
 @media (max-width: 440px) {
   body { padding-block: 8px; }
-  .phone { border-radius: 20px; max-height: none; }
-  h1 { font-size: 30px; }
+  .phone { border-radius: 24px; max-height: none; box-shadow: none; }
+  .slam { font-size: 48px; } .slam.huge { font-size: 70px; }
 }
 </style>
 
@@ -332,7 +461,7 @@ const isRich = id => id.startsWith('p');
 /* ---------- Avatars (illustrated stand-ins for small profile photos) ---------- */
 const SKIN = ['#f3d3b8', '#e2b08b', '#c78c63', '#9b6845', '#6f4731'];
 const HAIRC = ['#2b1f1a', '#5b3b23', '#a8672f', '#d8b36c', '#1c1c24', '#8d3c2f'];
-function avatarSVG(p) {
+function avatarSVG(p, attrs = '') {
   const skin = SKIN[p.skin], hc = HAIRC[p.hc];
   const shirt = `hsl(${(p.hue + 180) % 360} 30% 34%)`;
   const shortFront = `<path d="M10.5 21c0-6.2 4.2-10.5 9.5-10.5s9.5 4.3 9.5 10.5c-2.2-3-5.4-5-9.5-5s-7.3 2-9.5 5z" fill="${hc}"/>`;
@@ -341,7 +470,7 @@ function avatarSVG(p) {
   if (p.hair === 2) back = `<circle cx="20" cy="9.5" r="4.4" fill="${hc}"/>`;
   if (p.hair === 3) front = `<g fill="${hc}"><circle cx="12.3" cy="18" r="3.6"/><circle cx="15" cy="13.6" r="3.9"/><circle cx="20" cy="12" r="4.1"/><circle cx="25" cy="13.6" r="3.9"/><circle cx="27.7" cy="18" r="3.6"/></g>`;
   if (p.hair === 4) front = `<path d="M11.2 20c0-5.3 4-8.8 8.8-8.8s8.8 3.5 8.8 8.8c-2-1.9-5-2.9-8.8-2.9s-6.8 1-8.8 2.9z" fill="${hc}" opacity=".85"/>`;
-  return `<svg viewBox="0 0 40 40" aria-hidden="true"><circle cx="20" cy="20" r="20" fill="hsl(${p.hue} 42% 60%)"/>${back}<path d="M7 41c1.5-7.5 6-10.5 13-10.5S31.5 33.5 33 41z" fill="${shirt}"/><circle cx="20" cy="22" r="9.4" fill="${skin}"/>${front}<circle cx="16.7" cy="22.6" r="1.1" fill="#2a1e1a"/><circle cx="23.3" cy="22.6" r="1.1" fill="#2a1e1a"/><path d="M17.6 26.1q2.4 1.7 4.8 0" stroke="#2a1e1a" stroke-width="1" fill="none" stroke-linecap="round"/></svg>`;
+  return `<svg ${attrs} viewBox="0 0 40 40" aria-hidden="true"><circle cx="20" cy="20" r="20" fill="hsl(${p.hue} 42% 60%)"/>${back}<path d="M7 41c1.5-7.5 6-10.5 13-10.5S31.5 33.5 33 41z" fill="${shirt}"/><circle cx="20" cy="22" r="9.4" fill="${skin}"/>${front}<circle cx="16.7" cy="22.6" r="1.1" fill="#2a1e1a"/><circle cx="23.3" cy="22.6" r="1.1" fill="#2a1e1a"/><path d="M17.6 26.1q2.4 1.7 4.8 0" stroke="#2a1e1a" stroke-width="1" fill="none" stroke-linecap="round"/></svg>`;
 }
 function hash(s) { let h = 7; for (const c of s) h = (h * 31 + c.charCodeAt(0)) >>> 0; return h; }
 function meAvatar() {
@@ -399,10 +528,11 @@ const byDist = n => (a, b) => dist(a, n) - dist(b, n);
 function fresh(me) {
   return {
     screen: 'intro', round: 0,
-    me: me || { name: '', gender: '', seeking: '', ageMin: 22, ageMax: 32, intent: '', prios: [] },
+    me: me || { name: '', gender: '', seeking: '', ageMin: 22, ageMax: 32, intent: '', prios: [], hue: 330 },
     answers: [null, null, null, null, null], chips: [],
     bucket: [], pool: [], fallen: [], fellAt: {}, known: [], sparks: {}, sparkSel: null,
-    log: {}, syncNow: [], lastSplit: null, finalists: [], wild: null, decisions: {}, open: null, drafts: {}
+    log: {}, syncNow: [], lastSplit: null, finalists: [], wild: null, decisions: {}, open: null, drafts: {},
+    streak: {}, prevSync: [], flipped: {}, muted: false, locked: false, revealEnd: null
   };
 }
 let S = fresh();
@@ -416,7 +546,7 @@ function startGame() {
   while (a.length || b.length) { if (b.length) mixed.push(b.shift()); if (b.length) mixed.push(b.shift()); if (a.length) mixed.push(a.shift()); }
   S.bucket = mixed;
   S.round = 0; S.answers = [null, null, null, null, null];
-  S.fallen = []; S.fellAt = {}; S.known = []; S.sparks = {}; S.log = {}; S.decisions = {}; S.drafts = {}; S.finalists = []; S.wild = null;
+  S.fallen = []; S.fellAt = {}; S.known = []; S.streak = {}; S.prevSync = []; S.flipped = {}; S.revealEnd = null; S.locked = false; S.sparks = {}; S.log = {}; S.decisions = {}; S.drafts = {}; S.finalists = []; S.wild = null;
 }
 
 function faceOn(id) { return isRich(id) && (S.round >= 2 || S.known.includes(id) || sparkedIds().includes(id)); }
@@ -514,121 +644,200 @@ function playClip() {
 const $ = s => document.querySelector(s);
 const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const trunc = (s, n) => s.length > n ? s.slice(0, n - 1).trimEnd() + '…' : s;
+const pron = id => P(id).g === 'w' ? ['She', 'her'] : ['He', 'him'];
+const sparkLeft = () => SPARKS_PER_GAME - Object.keys(S.sparks).length;
+const REDUCED = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+let TO = [];
+const later = (fn, ms) => { TO.push(setTimeout(fn, ms)); };
+let T = null, clockT = null;
+function clearTimers() { TO.forEach(clearTimeout); TO = []; clearInterval(T); T = null; clearInterval(clockT); clockT = null; }
+
 let toastT = null;
 function toast(msg) {
   const t = $('#toast'); t.textContent = msg; t.classList.add('show');
   clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove('show'), 2600);
 }
-function tok(id, extra = '') {
-  if (id === 'me') return `<span class="tok me ${extra}"><span class="av">${meAvatar()}</span><span class="nm">${esc(S.me.name || 'You')}</span></span>`;
-  if (!faceOn(id)) return `<span class="tok crowd ${extra}" data-id="${id}"><span class="dot"></span></span>`;
+
+/* ---------- Sound effects ---------- */
+function ensureAC() { try { AC = AC || new (window.AudioContext || window.webkitAudioContext)(); if (AC.state === 'suspended') AC.resume(); } catch (e) {} }
+function tone(f, start, dur, type, vol, f2) {
+  const o = AC.createOscillator(), g = AC.createGain();
+  o.type = type; o.frequency.setValueAtTime(f, start);
+  if (f2) o.frequency.exponentialRampToValueAtTime(f2, start + dur);
+  g.gain.setValueAtTime(0.0001, start); g.gain.exponentialRampToValueAtTime(vol, start + 0.015);
+  g.gain.exponentialRampToValueAtTime(0.0001, start + dur);
+  o.connect(g); g.connect(AC.destination); o.start(start); o.stop(start + dur + 0.03);
+}
+function sfx(name) {
+  try {
+    if (!AC || S.muted) return;
+    const t = AC.currentTime + 0.01;
+    const seq = (notes, gap, dur, type, vol) => notes.forEach((f, i) => tone(f, t + i * gap, dur, type, vol));
+    ({
+      tick: () => tone(1250, t, .05, 'square', .04),
+      pop: () => tone(620, t, .08, 'triangle', .07, 1150),
+      count: () => tone(523, t, .16, 'square', .06),
+      go: () => { tone(784, t, .32, 'square', .07); tone(1175, t + .04, .32, 'square', .04); },
+      lock: () => seq([523, 784], .08, .14, 'triangle', .12),
+      sync: () => seq([523, 659, 784, 1047], .075, .26, 'sine', .13),
+      solo: () => tone(330, t, .3, 'triangle', .07, 260),
+      fall: () => tone(720, t, .45, 'sine', .06, 130),
+      spark: () => tone(880, t, .28, 'triangle', .1, 1900),
+      flip: () => tone(380, t, .14, 'triangle', .08, 950),
+      back: () => seq([392, 523, 659, 784], .07, .2, 'triangle', .1),
+      win: () => seq([523, 659, 784, 1047, 784, 1047, 1319], .1, .3, 'square', .05),
+      time: () => tone(300, t, .35, 'sawtooth', .05, 160)
+    })[name]();
+  } catch (e) {}
+}
+function playMusic() { if (S.muted) { toast('Sound is off. Turn it on in the top right to hear the clip.'); return; } playClip(); }
+
+/* ---------- Beans ---------- */
+function meP() { const h = hash(S.me.name || 'you'); return { hue: S.me.hue, skin: h % 5, hair: (h >> 3) % 5, hc: (h >> 6) % 6 }; }
+function beanSVG(p) {
+  const col = p ? `hsl(${p.hue} 85% 64%)` : 'hsl(258 24% 50%)';
+  const dk = p ? `hsl(${p.hue} 62% 42%)` : 'hsl(258 26% 34%)';
+  const face = p
+    ? `<circle cx="22" cy="21" r="12.2" fill="#fff"/>${avatarSVG(p, 'x="11" y="10" width="22" height="22"')}`
+    : `<circle cx="22" cy="21" r="11.5" fill="#1b1230"/><path d="M15.5 16.5q4-4.2 9.5-3" stroke="rgba(255,255,255,.45)" stroke-width="2.2" fill="none" stroke-linecap="round"/>`;
+  return `<svg class="bean" viewBox="0 0 44 60" aria-hidden="true"><rect x="11" y="43" width="8" height="14" rx="4" fill="${dk}"/><rect x="25" y="43" width="8" height="14" rx="4" fill="${dk}"/><ellipse cx="7.5" cy="33" rx="4" ry="7.5" fill="${dk}"/><ellipse cx="36.5" cy="33" rx="4" ry="7.5" fill="${dk}"/><rect x="7" y="3" width="30" height="47" rx="15" fill="${col}"/><rect x="10.5" y="9" width="5" height="21" rx="2.5" fill="rgba(255,255,255,.32)"/>${face}</svg>`;
+}
+const delayFor = id => `style="--d:-${(hash(String(id)) % 19) / 10}s"`;
+function pl(id, o = {}) {
+  const extra = o.extra || '';
+  const tile = '<span class="hexw"><span class="hex"></span></span>';
+  if (id === 'me') return `<div class="pl me ${extra}" ${delayFor('me')}>${beanSVG(meP())}${tile}<span class="nm">${esc(S.me.name || 'You')}</span></div>`;
+  if (!isRich(id) || !(o.face || faceOn(id))) return `<div class="pl crowd ${extra}" data-id="${id}" ${delayFor(id)}>${beanSVG(null)}${tile}</div>`;
   const p = P(id);
   const cls = sparkedIds().includes(id) ? 'sparked' : S.known.includes(id) ? 'synced' : '';
-  return `<span class="tok ${cls} ${extra}" data-id="${id}"><span class="av">${avatarSVG(p)}</span><span class="nm">${esc(p.name)}</span></span>`;
+  return `<div class="pl ${cls} ${extra}" data-id="${id}" ${delayFor(id)}>${beanSVG(p)}${tile}<span class="nm">${esc(p.name)}</span></div>`;
 }
-const pron = id => P(id).g === 'w' ? ['She', 'her'] : ['He', 'him'];
+const density = n => n > 20 ? 'dense' : n > 9 ? 'mid' : '';
+const arena = (ids, o = {}) => `<div class="arena ${o.cls || density(ids.length + 1)}" ${o.id ? `id="${o.id}"` : ''}>${o.noMe ? '' : pl('me')}${ids.map(id => pl(id, o)).join('')}</div>`;
 
-function bar() {
-  const inGame = ['roundIntro', 'question', 'sync', 'spark', 'split'].includes(S.screen);
-  const dots = inGame ? ROUNDS.map((_, i) => `<i class="${i < S.round ? 'done' : i === S.round ? 'now' : ''}"></i>`).join('') : '';
-  const count = inGame ? `<span class="count" id="hdrcount">${S.bucket.length} with you</span>` : (S.screen === 'finalists' || S.screen === 'profile') ? '<span class="count">Reveal</span>' : '<span class="count">Prototype</span>';
-  return `<header class="bar"><span class="brand">soul<b>it</b></span><span class="rounds" aria-label="Round ${S.round + 1} of 5">${dots}</span>${count}</header>`;
+const ICON = {
+  star: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5l2.9 6.1 6.6.8-4.9 4.5 1.3 6.6L12 17.2l-5.9 3.3 1.3-6.6-4.9-4.5 6.6-.8z" fill="currentColor"/></svg>',
+  on: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9h4l5-4v14l-5-4H4z" fill="currentColor"/><path d="M16.5 8.5a5 5 0 010 7M19 6a8.5 8.5 0 010 12" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"/></svg>',
+  off: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9h4l5-4v14l-5-4H4z" fill="currentColor"/><path d="M16 9l6 6M22 9l-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>',
+  shapes: [
+    '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l10 18H2z" fill="currentColor"/></svg>',
+    '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l10 10-10 10L2 12z" fill="currentColor"/></svg>',
+    '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10" fill="currentColor"/></svg>',
+    '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2" fill="currentColor"/></svg>'
+  ]
+};
+
+/* ---------- HUD ---------- */
+const GAME = ['roundCard', 'countdown', 'question', 'sync', 'spark', 'split'];
+function hud() {
+  const game = GAME.includes(S.screen);
+  const left = game
+    ? `<div class="pips" aria-label="Round ${S.round + 1} of 5">${ROUNDS.map((_, i) => `<i class="${i < S.round ? 'done' : i === S.round ? 'now' : ''}"></i>`).join('')}</div>`
+    : '<div class="brand">soul<b>it</b></div>';
+  let mid = '';
+  if (game) mid = `<div class="pill" title="Players on your platform"><span class="mini-bean"></span><span id="hudcount">${S.bucket.length + 1}</span></div>`;
+  if (['finalists', 'profile'].includes(S.screen)) mid = `<div class="pill" title="Reveal window">⏳ <span id="clock">72:00:00</span></div>`;
+  const spark = game ? `<div class="pill spark ${sparkLeft() ? '' : 'used'}" title="Sparks left this game">${ICON.star}<span>${sparkLeft()}</span></div>` : '';
+  const mute = `<button class="pill icon" data-act="mute" aria-label="${S.muted ? 'Turn sound on' : 'Turn sound off'}">${S.muted ? ICON.off : ICON.on}</button>`;
+  return `<header class="hud">${left}${mid}<div class="hud-r">${spark}${mute}</div></header>`;
 }
 
-/* ---------- Screens ---------- */
+/* ---------- Scenes ---------- */
 const V = {};
 V.intro = () => `
-  <div class="screen center">
-    <div class="logo">soul<b>it</b></div>
-    <p class="lede">Meet people through who you are. Answer five quick questions, watch the room narrow down, and see who's still standing with you.</p>
-    <div class="stage"><div class="platform">
-      ${PLAYERS.slice(0, 7).map(p => `<span class="tok"><span class="av">${avatarSVG(p)}</span></span>`).join('')}
-      ${Array.from({ length: 9 }, () => '<span class="tok crowd"><span class="dot"></span></span>').join('')}
-    </div></div>
-    <div class="grow"></div>
-    <div class="actions"><button class="btn" data-act="go" data-to="onboard">Start</button></div>
-    <p class="fine">Prototype. Every player here is fictional.</p>
+  <div class="scene center">
+    <div class="slam huge p" style="font-size:78px">soul<span style="color:var(--yellow)">it</span></div>
+    <div class="sticker">the dating game show</div>
+    <div class="stage"><div class="arena mid">${['p3', 'c1', 'p9', 'c2', 'p1', 'c3', 'p13', 'c4', 'p6', 'c5', 'p16'].map(id => pl(id, { face: true })).join('')}</div><div class="slime"></div></div>
+    <p class="lede">Five rounds. One platform. Answer fast, watch the room fall away, and meet whoever is still standing with you.</p>
+    <button class="btn3d pink" data-act="go" data-to="onboard">Play</button>
+    <p class="fine">Prototype · every player is fictional</p>
   </div>`;
 
+const HUES = [330, 18, 48, 150, 195, 265];
 V.onboard = () => {
   const m = S.me;
   const chip = (k, v) => `<button class="chip ${m[k] === v ? 'on' : ''}" data-act="set" data-k="${k}" data-v="${v}" aria-pressed="${m[k] === v}">${v}</button>`;
   return `
-  <div class="screen">
-    <div><p class="eyebrow">Before you play</p><h2>What you're looking for</h2></div>
-    <div class="field"><label for="f-name">First name, shown to others</label>
-      <input type="text" id="f-name" maxlength="20" placeholder="e.g. Emir" value="${esc(m.name)}" autocomplete="given-name"></div>
+  <div class="scene">
+    <div class="slam sm" style="text-align:center">Build your bean</div>
+    <div class="preview">${pl('me')}</div>
+    <div class="swatches">${HUES.map(h => `<button class="sw ${m.hue === h ? 'on' : ''}" style="background:hsl(${h} 85% 64%)" data-act="hue" data-v="${h}" aria-label="Bean colour ${h}" aria-pressed="${m.hue === h}"></button>`).join('')}</div>
+    <div class="field"><label class="lbl" for="f-name">Your first name</label>
+      <input type="text" id="f-name" maxlength="16" placeholder="e.g. Emir" value="${esc(m.name)}" autocomplete="given-name"></div>
     <div class="field"><span class="lbl">I am</span><div class="chips">${['Woman', 'Man', 'Non-binary'].map(v => chip('gender', v)).join('')}</div></div>
     <div class="field"><span class="lbl">Show me</span><div class="chips">${['Women', 'Men', 'Everyone'].map(v => chip('seeking', v)).join('')}</div></div>
-    <div class="field"><span class="lbl">Age range (a dealbreaker, both ways)</span>
+    <div class="field"><span class="lbl">Age range · dealbreaker</span>
       <div class="range-row"><input type="range" id="f-amin" min="18" max="50" value="${m.ageMin}" aria-label="Minimum age">
       <input type="range" id="f-amax" min="18" max="50" value="${m.ageMax}" aria-label="Maximum age">
       <span class="range-val" id="f-aval">${m.ageMin}–${m.ageMax}</span></div></div>
     <div class="field"><span class="lbl">Looking for</span><div class="chips">${['Something serious', 'Something casual', 'Not sure yet'].map(v => chip('intent', v)).join('')}</div></div>
-    <div class="field"><span class="lbl">What matters most? Pick two</span><div class="chips">
+    <div class="field"><span class="lbl">Power-ups · pick 2 that matter most</span><div class="chips">
       ${PRIOS.map(p => `<button class="chip ${m.prios.includes(p.k) ? 'on' : ''}" data-act="prio" data-v="${p.k}" aria-pressed="${m.prios.includes(p.k)}">${p.k}</button>`).join('')}</div></div>
     <p class="hint" id="hint"></p>
-    <div class="actions"><button class="btn" data-act="toLobby">Continue</button></div>
+    <button class="btn3d" data-act="toLobby">Ready up</button>
   </div>`;
 };
 
-V.lobby = () => `
-  <div class="screen">
-    <div><p class="eyebrow">Tonight's run</p><h2>42 people near you have played this week</h2></div>
-    <div class="stage"><div class="platform">
-      ${Array.from({ length: 20 }, () => '<span class="tok crowd"><span class="dot"></span></span>').join('')}
-      ${tok('me')}
-      ${Array.from({ length: 21 }, () => '<span class="tok crowd"><span class="dot"></span></span>').join('')}
-    </div></div>
-    <ul class="plain small muted">
-      <li>Five rounds. Each question has a timer and can't be edited.</li>
-      <li>After each round, people who fit you less fall to other platforms.</li>
-      <li>Faces and first names show once the room gets small. Answers stay hidden until the reveal.</li>
-      <li>You get one spark per game, from round 3 on. Save it for someone who stands out.</li>
+V.matchmaking = () => `
+  <div class="scene center">
+    <div class="eyebrow">Matchmaking</div>
+    <div class="slam sm" id="mmTitle">Finding players near you</div>
+    <div class="mm-count"><span id="mmN">1</span><small>/${S.bucket.length + 1}</small></div>
+    <div class="stage"><div class="arena dense" id="arena">${pl('me', { extra: 'popin' })}</div><div class="slime"></div></div>
+    <ul class="rules">
+      <li><b>1</b>Five rounds. Each question has a timer, and answers can't be edited.</li>
+      <li><b>2</b>After every round, people who fit you less fall to other platforms.</li>
+      <li><b>3</b>Faces show once the room gets small. Answers stay hidden until the reveal.</li>
+      <li><b>★</b>You get one spark per game, from round 3. Save it for someone who stands out.</li>
     </ul>
-    <div class="grow"></div>
-    <div class="actions"><button class="btn" data-act="enter">Enter the room</button></div>
+    <button class="btn3d pink" id="mmGo" data-act="enter" disabled>Let's go</button>
   </div>`;
 
-V.roundIntro = () => {
+V.roundCard = () => {
   const R = ROUNDS[S.round];
   return `
-  <div class="screen">
-    <div><p class="eyebrow">Round ${S.round + 1} of 5 · ${R.theme}</p><h2>${S.bucket.length} people left on your platform</h2></div>
-    <div class="stage"><div class="platform">${S.bucket.map(id => tok(id)).join('')}</div></div>
-    ${R.anchor ? '<span class="tag">Everyone gets this one</span>' : ''}
-    <p class="muted">The question stays hidden until you're ready. You'll have ${R.time} seconds${R.type === 'music' ? ', and a short clip will play' : ''}.</p>
-    <div class="grow"></div>
-    <div class="actions"><button class="btn" data-act="showQ">Show the question</button></div>
+  <div class="scene center">
+    <div class="slam huge y">Round ${S.round + 1}</div>
+    <div class="sticker">${esc(R.theme)}</div>
+    ${R.anchor ? '<div class="sticker alt">Everyone gets this one</div>' : ''}
+    <p class="lede">${R.time} seconds on the clock. No edits.${R.type === 'music' ? ' Sound on: a clip will play.' : ''}</p>
+    <div class="stage">${arena(S.bucket)}<div class="slime"></div></div>
+    <button class="btn3d pink" data-act="ready">I'm ready</button>
   </div>`;
 };
+
+V.countdown = () => `<div class="scene center"><div class="cd" id="cd">3</div></div>`;
 
 V.question = () => {
   const R = ROUNDS[S.round];
   let body = '';
   if (R.type === 'choice') {
-    body = `<div class="opts">${R.opts.map((o, i) => `<button class="opt" data-act="pick" data-i="${i}"><span class="g" aria-hidden="true">${GLYPHS[i]}</span>${esc(o.t)}</button>`).join('')}</div>`;
+    body = `<div class="opts">${R.opts.map((o, i) => `<button class="opt" data-act="pick" data-i="${i}">${ICON.shapes[i]}<span>${esc(o.t)}</span></button>`).join('')}</div>`;
   } else if (R.type === 'slider') {
-    body = `<div class="slider-wrap"><input type="range" id="f-slider" min="0" max="100" value="50" aria-label="${esc(R.q)}">
+    body = `<div class="slider-box"><input type="range" id="f-slider" min="0" max="100" value="50" aria-label="${esc(R.q)}">
       <div class="slider-ends"><span>${R.left}</span><span>${R.right}</span></div></div>
-      <button class="btn" data-act="lock">Lock it in</button>`;
+      <button class="btn3d" data-act="lock">Lock it in</button>`;
   } else if (R.type === 'music') {
-    const bars = Array.from({ length: 34 }, (_, i) => `<i style="height:${6 + Math.round(Math.abs(Math.sin(i * 1.7)) * 20)}px"></i>`).join('');
-    body = `<div class="play"><button data-act="replay" aria-label="Play the clip again">▶</button><div class="wave" id="wave">${bars}</div></div>
+    const bars = Array.from({ length: 30 }, (_, i) => `<i style="height:${8 + Math.round(Math.abs(Math.sin(i * 1.7)) * 24)}px"></i>`).join('');
+    body = `<div class="player"><button data-act="replay" aria-label="Play the clip again">▶</button><div class="wave" id="wave">${bars}</div></div>
       <div class="chips">${R.chips.map(c => `<button class="chip ${S.chips.includes(c.k) ? 'on' : ''}" data-act="mchip" data-v="${c.k}" aria-pressed="${S.chips.includes(c.k)}">${esc(c.t)}</button>`).join('')}</div>
       <textarea id="f-text" maxlength="160" placeholder="Or set the scene yourself"></textarea>
-      <button class="btn" data-act="lock">Lock it in</button>`;
+      <button class="btn3d" data-act="lock">Lock it in</button>`;
   } else {
     body = `<textarea id="f-text" maxlength="160" placeholder="First thing that comes to mind. No overthinking."></textarea>
-      <button class="btn" data-act="lock">Lock it in</button>`;
+      <button class="btn3d" data-act="lock">Lock it in</button>`;
   }
   return `
-  <div class="screen">
-    <div class="timer"><div class="track"><i id="tbar"></i></div><span class="tnum" id="tnum">${R.time}</span></div>
-    <div class="qcard">
-      <p class="eyebrow">Round ${S.round + 1} · ${R.theme}</p>
-      <h2>${esc(R.q)}</h2>
-      ${R.anchor ? '<span class="tag">Everyone gets this one</span>' : ''}
+  <div class="scene">
+    <div class="qwrap">
+      <div class="ring" id="ring"><svg viewBox="0 0 70 70"><circle class="bg" cx="35" cy="35" r="29"/><circle class="fg" id="ringfg" cx="35" cy="35" r="29" stroke-dasharray="182.2" stroke-dashoffset="0"/></svg><span id="tnum">${R.time}</span></div>
+      <div class="qcard">
+        <div class="eyebrow">Round ${S.round + 1} · ${esc(R.theme)}</div>
+        <h2>${esc(R.q)}</h2>
+        ${R.anchor ? '<span class="tag-anchor">Everyone gets this one</span>' : ''}
+      </div>
     </div>
     ${body}
   </div>`;
@@ -636,169 +845,219 @@ V.question = () => {
 
 V.sync = () => {
   const R = ROUNDS[S.round], ids = S.syncNow;
-  const names = ids.map(id => P(id).name);
-  const line = ids.length
-    ? `You and ${names.join(' and ')} think alike about <em>${R.theme}</em>.`
-    : 'No sync this round. The room still moved with your answer.';
-  return `
-  <div class="screen center">
-    <p class="eyebrow">Sync</p>
-    ${ids.length ? `<div class="sync-hero">${ids.map(id => tok(id)).join('')}</div>` : ''}
-    <h2>${line}</h2>
-    <p class="muted">${ids.length ? "You won't see what they said until the reveal." : 'Answers that fit nobody here still shape who stays with you.'}</p>
+  if (!ids.length) return `
+  <div class="scene center">
+    <div class="rays-wrap"><div class="rays grey"></div><div class="slam sm" style="color:var(--muted)">Solo round</div></div>
+    <p class="line">Nobody here matched that one. The room still moved with your answer.</p>
     <div class="grow"></div>
-    <div class="actions"><button class="btn" data-act="toSpark">Continue</button></div>
+    <button class="btn3d" data-act="toSpark">Continue</button>
+  </div>`;
+  const best = ids.reduce((a, id) => (S.streak[id] || 0) > (S.streak[a] || 0) ? id : a, ids[0]);
+  const st = S.streak[best] || 1;
+  return `
+  <div class="scene center">
+    <div class="rays-wrap"><div class="rays"></div>
+      <div class="slam m">Sync!</div>
+      ${st > 1 ? `<div class="combo">Sync streak ×${st} with ${esc(P(best).name)}</div>` : ''}
+      ${arena(ids, { cls: 'big', noMe: true })}
+    </div>
+    <p class="line">You and ${ids.map(id => esc(P(id).name)).join(' and ')} think alike about <em>${esc(R.theme)}</em>.</p>
+    <p class="muted">What they said stays locked until the reveal.</p>
+    <div class="grow"></div>
+    <button class="btn3d" data-act="toSpark">Continue</button>
   </div>`;
 };
 
 V.spark = () => {
-  const cands = S.bucket.filter(id => faceOn(id) && !sparkedIds().includes(id));
-  const grid = cands.length
-    ? `<div class="cands">${cands.map(id => `<button class="cand ${S.sparkSel === id ? 'on' : ''}" data-act="sel" data-id="${id}" aria-pressed="${S.sparkSel === id}">${tok(id)}</button>`).join('')}</div>`
-    : '<p class="muted">Nobody to spark yet. Faces show up as the room gets smaller, or when you sync with someone.</p>';
+  const cands = S.bucket.filter(id => faceOn(id));
   return `
-  <div class="screen">
-    <div><p class="eyebrow">Spark · one per game</p><h2>Anyone catch your eye?</h2></div>
-    <p class="muted small">You get one spark per game. It nudges who stays with you, and they'll see it at the reveal. Use it now or keep it for a later round.</p>
-    ${grid}
+  <div class="scene center">
+    <div class="token" id="token">${ICON.star}</div>
+    <div class="slam sm">Throw your spark?</div>
+    <p class="muted">One per game. It nudges who stays with you, and they'll see it at the reveal.</p>
+    <div class="cands">${cands.map(id => `<button class="cand ${S.sparkSel === id ? 'on' : ''}" data-act="sel" data-id="${id}" aria-pressed="${S.sparkSel === id}">${pl(id)}</button>`).join('')}</div>
     <div class="grow"></div>
     <div class="actions">
-      ${cands.length ? `<button class="btn" data-act="sendSpark" ${S.sparkSel ? '' : 'disabled'}>Send spark${S.sparkSel ? ' to ' + esc(P(S.sparkSel).name) : ''}</button>` : ''}
-      <button class="btn ${cands.length ? 'quiet' : ''}" data-act="skipSpark">${!cands.length ? 'Continue' : S.round < 4 ? 'Keep it for later' : 'Don\'t use it'}</button>
+      <button class="btn3d" data-act="sendSpark" ${S.sparkSel ? '' : 'disabled'}>${S.sparkSel ? 'Throw it at ' + esc(P(S.sparkSel).name) : 'Pick someone'}</button>
+      <button class="btn3d ghost" data-act="skipSpark">${S.round < 4 ? 'Save it for later' : "Don't use it"}</button>
     </div>
   </div>`;
 };
 
 V.split = () => {
-  const L = S.lastSplit;
-  const shown = L.before;
-  const last = L.r === 4;
+  const L = S.lastSplit, last = L.r === 4;
   return `
-  <div class="screen">
-    <div class="split-meta">
-      <div><p class="eyebrow">Round ${L.r + 1} · the split</p><h2>${last ? 'Final platform' : 'The room is moving'}</h2></div>
+  <div class="scene">
+    <div class="split-head">
+      <div><div class="eyebrow">Round ${L.r + 1}</div><div class="slam sm">${last ? 'Final split' : 'Split!'}</div></div>
+      <div class="bigcount" id="bigcount">${L.before.length + 1}<small>left</small></div>
     </div>
-    <div class="bigcount"><span id="bigcount">${shown.length}</span><small>with you</small></div>
-    <div class="stage"><div class="platform big" id="platform">${shown.map(id => tok(id)).join('')}</div></div>
+    <div class="stage tall">${arena(L.before, { id: 'arena' })}<div class="slime"></div></div>
     <div class="notes" id="notes" aria-live="polite"></div>
     <div class="grow"></div>
-    <div class="actions"><button class="btn" id="nextBtn" data-act="next" disabled>${last ? 'Meet your finalists' : 'Next round'}</button></div>
+    <button class="btn3d pink" id="nextBtn" data-act="next" disabled>${last ? 'See results' : 'Next round'}</button>
   </div>`;
 };
 
+V.qualified = () => `
+  <div class="scene center">
+    <div class="rays-wrap"><div class="rays gold"></div>
+      <div class="slam huge y" style="font-size:66px">Qualified!</div>
+      ${arena(S.finalists, { cls: 'big' })}
+    </div>
+    <p class="lede">You made it to the end with 3 people. You're their finalist too.</p>
+    <div class="grow"></div>
+    <button class="btn3d pink" data-act="go" data-to="finalists">Open your cards</button>
+  </div>`;
+
 V.finalists = () => {
   const done = S.finalists.every(id => S.decisions[id]);
+  const allFlipped = S.finalists.every(id => S.flipped[id]);
   return `
-  <div class="screen">
-    <div><p class="crown">Finalists</p><h1>These are your people tonight</h1></div>
-    <p class="muted">You're their finalist too. Profiles and answers are open now.</p>
-    <div class="window"><span class="muted">Reveal window closes in</span><span class="mono" id="clock">72:00:00</span></div>
-    <div class="fcards">${S.finalists.map(id => {
-      const p = P(id), wild = S.wild && S.wild.id === id;
+  <div class="scene">
+    <div class="slam sm">Your finalists</div>
+    <p class="muted">${allFlipped ? 'Tap a card to see the full story.' : 'Tap a card to flip it.'}</p>
+    <div class="fan">${S.finalists.map(id => {
+      const p = P(id), wild = S.wild && S.wild.id === id, st = S.decisions[id];
       const syncs = (S.log[id] || []).filter(e => e.text.startsWith('Synced')).map(e => e.text.replace('Synced on ', ''));
-      const reason = wild ? `You differ on ${DIM_WORDS[S.wild.dim]}. The rest lines up.` : syncs.length ? `Synced on ${syncs.join(', ')}` : 'Close across the board';
-      const st = S.decisions[id];
-      return `<button class="fcard" data-act="open" data-id="${id}">
-        ${tok(id)}
-        <span class="info">
-          <span class="name">${esc(p.name)}, ${p.age}</span>
-          <span class="tag ${wild ? 'wild' : 'strong'}">${wild ? 'Wildcard' : 'Strong match'}</span>
-          <span class="small muted">${esc(reason)}</span>
-          <span class="status ${st === 'sent' ? 'sent' : ''}">${st === 'sent' ? 'Request sent' : st === 'passed' ? 'Passed quietly' : `${p.km} km away · tap to see the story`}</span>
-        </span></button>`;
+      const why = wild ? `You differ on ${DIM_WORDS[S.wild.dim]}. Everything else lines up.` : syncs.length ? `Synced on ${syncs.join(', ')}` : 'Close across the board';
+      return `<div class="card3d ${S.flipped[id] ? 'flipped' : ''}"><button class="card-inner" data-act="card" data-id="${id}" aria-label="${S.flipped[id] ? 'Open ' + esc(p.name) : 'Flip card'}">
+        <span class="face backside"><span class="cb-logo">soul<b>it</b></span><span class="cb-q">?</span><span class="cb-tap">TAP TO REVEAL</span></span>
+        <span class="face frontside ${wild ? 'holo' : ''}">${pl(id, { face: true })}
+          <span class="info"><span class="badge">${wild ? 'Wildcard' : 'Strong match'}</span><span class="name">${esc(p.name)}, ${p.age}</span>
+          <span class="why">${esc(why)}</span>
+          <span class="status ${st === 'sent' ? 'sent' : ''}">${st === 'sent' ? '✓ Request sent' : st === 'passed' ? 'Passed quietly' : `${p.km} km away · tap for story`}</span></span>
+        </span></button></div>`;
     }).join('')}</div>
     <div class="grow"></div>
-    <div class="actions"><button class="btn ${done ? '' : 'ghost'}" data-act="finish" ${done ? '' : 'disabled'}>${done ? 'Finish this run' : 'Message or pass each finalist to finish'}</button></div>
+    <button class="btn3d ${done ? 'pink' : 'ghost'}" data-act="finish" ${done ? '' : 'disabled'}>${done ? 'Finish the run' : 'Message or pass everyone'}</button>
   </div>`;
 };
 
 V.profile = () => {
-  const id = S.open, p = P(id), [He] = pron(id);
+  const id = S.open, p = P(id), wild = S.wild && S.wild.id === id;
   const events = S.log[id] || [];
   const rows = ROUNDS.map((R, r) => {
     const ev = events.filter(e => e.r === r);
-    if (!ev.length) return `<div class="tl"><div class="r">Round ${r + 1} · ${R.theme}</div><div class="ev muted">On the same platform</div></div>`;
-    return ev.map(e => `<div class="tl ${e.kind}"><div class="r">Round ${r + 1} · ${R.theme}</div><div class="ev">${esc(e.text)}</div></div>`).join('');
+    const kind = ev.some(e => e.kind === 'sp') ? 'sp' : ev.some(e => e.kind === 'hit') ? 'hit' : '';
+    const text = ev.length ? ev.map(e => esc(e.text)).join(' · ') : 'Same platform';
+    return `<div class="rr ${kind}"><span class="rn">${r + 1}</span><span><span class="rt">${esc(R.theme)}</span>${text}</span></div>`;
   }).join('');
-  const anchor = ROUNDS[4], mine = S.answers[4], theirs = p.a[4];
-  const same = mine === theirs;
-  const myQ = ROUNDS[3].q;
+  const anchor = ROUNDS[4], mine = S.answers[4], theirs = p.a[4], same = mine === theirs;
   const starters = [
-    `Tell me more about "${trunc(p.a[3], 42)}"`,
-    same ? `We'd both run back in for the same thing. Explain yourself.` : `You'd save "${trunc(anchor.opts[theirs].t, 34)}" from a fire? Defend it.`,
-    `Question swap? Yours was "${p.own[0]}" Mine was "${myQ}"`
+    `Tell me more about "${trunc(p.a[3], 40)}"`,
+    same ? "We'd both run back in for the same thing. Explain yourself." : `You'd save "${trunc(anchor.opts[theirs].t, 30)}" from a fire? Defend it.`,
+    `Question swap? You answer mine: "${ROUNDS[0].q}"`
   ];
-  const st = S.decisions[id];
-  const composer = st ? `<p class="status ${st === 'sent' ? 'sent' : ''}">${st === 'sent' ? `Request sent. ${p.name} sees it next to your shared story.` : `Passed quietly. ${p.name} won't be told.`}</p>` : `
-    <div class="section"><h3>Send a message request</h3>
-      <div class="chips">${starters.map((s, i) => `<button class="chip" data-act="starter" data-i="${i}">${esc(trunc(s, 46))}</button>`).join('')}</div>
-      <textarea id="f-msg" maxlength="300" placeholder="Start from something you shared">${esc(S.drafts[id] || '')}</textarea>
-      <div class="actions"><button class="btn" data-act="send">Send request</button><button class="btn quiet" data-act="pass">Pass quietly</button></div>
-    </div>`;
   S._starters = starters;
+  const st = S.decisions[id];
+  const composer = st
+    ? `<div class="decided ${st}">${st === 'sent' ? `✓ Request sent. ${esc(p.name)} sees it next to your match replay.` : `Passed quietly. ${esc(p.name)} won't be told.`}</div>`
+    : `<div class="sec"><div class="sec-h">Make your move</div>
+        <div class="chips">${starters.map((s, i) => `<button class="chip" data-act="starter" data-i="${i}">${esc(trunc(s, 44))}</button>`).join('')}</div>
+        <textarea id="f-msg" maxlength="300" placeholder="Start from something you shared">${esc(S.drafts[id] || '')}</textarea>
+        <div class="actions"><button class="btn3d pink" data-act="send">Send request</button><button class="btn3d ghost" data-act="pass">Pass quietly</button></div></div>`;
   return `
-  <div class="screen">
-    <button class="backlink" data-act="back">← Finalists</button>
-    <div class="prof-head">${tok(id)}<div><h2>${esc(p.name)}, ${p.age}</h2><p class="muted small">${p.km} km away · also looking for ${esc((S.me.intent || 'something real').toLowerCase())}</p></div></div>
-    <p>${esc(p.bio)}</p>
-    <div class="section"><h3>Your story together</h3><div class="timeline">${rows}</div></div>
-    <div class="section"><h3>Same question, both of you</h3><p class="small muted">${esc(anchor.q)}</p>
-      <div class="compare"><div class="${same ? 'same' : ''}"><b>You</b>${mine == null ? '<span class="muted">Time ran out</span>' : esc(anchor.opts[mine].t)}</div><div class="${same ? 'same' : ''}"><b>${esc(p.name)}</b>${esc(anchor.opts[theirs].t)}</div></div></div>
-    <div class="section"><h3>What ${He.toLowerCase()} said</h3>
-      <div class="quote"><div class="q">The song was the soundtrack to</div><div class="a">“${esc(p.a[2].text)}”</div></div>
-      <div class="quote"><div class="q">Home, without the address</div><div class="a">“${esc(p.a[3])}”</div></div>
-      <div class="quote"><div class="q">A question you never got: ${esc(p.own[0])}</div><div class="a">“${esc(p.own[1])}”</div></div>
+  <div class="scene">
+    <button class="backlink" data-act="back">‹ Cards</button>
+    <div class="prof ${wild ? 'holo' : ''}">
+      <div class="prof-top">${pl(id, { face: true })}<div><span class="badge">${wild ? 'Wildcard' : 'Strong match'}</span><div class="name">${esc(p.name)}, ${p.age}</div><div class="meta">${p.km} km away · also looking for ${esc((S.me.intent || 'something real').toLowerCase())}</div></div></div>
+      <p class="bio">${esc(p.bio)}</p>
     </div>
+    <div class="sec"><div class="sec-h">Match replay</div><div class="replay">${rows}</div></div>
+    <div class="sec"><div class="sec-h">Same question</div><p class="muted small">${esc(anchor.q)}</p>
+      ${same ? '<span class="same-pick">Same pick!</span>' : ''}
+      <div class="vs"><div class="bubble"><b>You</b>${mine == null ? 'Ran out of time' : esc(anchor.opts[mine].t)}</div><span class="vs-badge">${same ? '=' : 'VS'}</span><div class="bubble"><b>${esc(p.name)}</b>${esc(anchor.opts[theirs].t)}</div></div></div>
+    <div class="sec"><div class="sec-h">Unlocked answers</div><div class="stickers">
+      <div class="stk"><div class="q">Their soundtrack scene</div><div class="a">“${esc(p.a[2].text)}”</div></div>
+      <div class="stk"><div class="q">Home, without the address</div><div class="a">“${esc(p.a[3])}”</div></div>
+      <div class="stk"><div class="q">${esc(p.own[0])}</div><div class="a">“${esc(p.own[1])}”</div></div>
+    </div></div>
     ${composer}
   </div>`;
 };
 
 V.end = () => {
   const synced = new Set(Object.entries(S.log).filter(([, ev]) => ev.some(e => e.text.startsWith('Synced'))).map(([id]) => id)).size;
+  const back = Object.values(S.log).flat().filter(e => e.text.startsWith('Came back')).length;
   const sent = Object.values(S.decisions).filter(x => x === 'sent').length;
   return `
-  <div class="screen">
-    <div><p class="eyebrow">Run complete</p><h1>That's the run</h1></div>
+  <div class="scene">
+    <div class="slam y" style="text-align:center">Run complete</div>
     <div class="stats">
       <div class="stat"><span class="n">${synced}</span><span class="l">people synced</span></div>
-      <div class="stat"><span class="n">${Object.keys(S.sparks).length}/${SPARKS_PER_GAME}</span><span class="l">spark used</span></div>
+      <div class="stat"><span class="n">${back}</span><span class="l">comebacks</span></div>
+      <div class="stat"><span class="n">${SPARKS_PER_GAME - sparkLeft()}/${SPARKS_PER_GAME}</span><span class="l">spark thrown</span></div>
       <div class="stat"><span class="n">${sent}</span><span class="l">requests sent</span></div>
     </div>
-    <div class="section"><h3>What happens next</h3>
-      <ul class="plain">
-        <li>Each person you messaged sees your request with your shared story, then accepts or passes quietly.</li>
-        <li>Finalists you didn't act on expire when the 72-hour window closes.</li>
-        <li>Your next game unlocks when enough new people near you have played.</li>
-      </ul></div>
-    <p class="muted small">In this prototype you can play again right away. Answer differently and different people will stay with you.</p>
-    <div class="grow"></div>
-    <div class="actions"><button class="btn" data-act="again">Play again</button><button class="btn quiet" data-act="go" data-to="finalists">Back to finalists</button></div>
+    <div class="sec"><div class="sec-h">Next game</div>
+      <div class="meter"><i></i></div>
+      <p class="muted small">3 of 20 new players near you. Your next game unlocks when the bar fills, so you only play when there are good people to meet.</p></div>
+    <ul class="rules">
+      <li><b>→</b>People you messaged see your request with your match replay, then accept or pass quietly.</li>
+      <li><b>⏳</b>Finalists you didn't act on expire when the 72-hour window closes.</li>
+    </ul>
+    <p class="fine">Prototype: you can play again right away. Answer differently and different people stay with you.</p>
+    <div class="actions"><button class="btn3d pink" data-act="again">Play again</button><button class="btn3d ghost" data-act="go" data-to="finalists">Back to cards</button></div>
   </div>`;
 };
 
-/* ---------- Render + timers ---------- */
-let T = null, clockT = null;
-const clearTimers = () => { clearInterval(T); T = null; clearInterval(clockT); clockT = null; };
+/* ---------- Render ---------- */
 function render() {
   clearTimers();
-  const app = $('#app');
-  app.innerHTML = bar() + V[S.screen]();
-  const sc = app.querySelector('.screen'); if (sc) sc.scrollTop = 0;
-  if (S.screen === 'question') startTimer();
-  if (S.screen === 'split') runSplit();
-  if (S.screen === 'finalists') startClock();
+  $('#app').innerHTML = hud() + V[S.screen]();
+  const sc = document.querySelector('.scene'); if (sc) sc.scrollTop = 0;
+  ({
+    matchmaking: runMatchmaking, countdown: runCountdown, question: startTimer, split: runSplit,
+    qualified: () => { sfx('win'); confetti(); },
+    finalists: startClock, profile: startClock
+  })[S.screen]?.();
+}
+
+function runMatchmaking() {
+  const ar = $('#arena'), ids = S.bucket;
+  let i = 0;
+  const step = () => {
+    if (i >= ids.length) {
+      $('#mmTitle').textContent = 'Room full!';
+      const b = $('#mmGo'); b.disabled = false; b.classList.add('ready-pop'); sfx('go');
+      return;
+    }
+    ar.insertAdjacentHTML('beforeend', pl(ids[i], { extra: 'popin' }));
+    i++; $('#mmN').textContent = i + 1;
+    if (i % 3 === 0) sfx('pop');
+    later(step, REDUCED ? 0 : 45 + Math.random() * 50);
+  };
+  later(step, 500);
+}
+
+function runCountdown() {
+  const steps = ['3', '2', '1', 'GO!'];
+  steps.forEach((s, i) => later(() => {
+    const el = $('#cd'); if (!el) return;
+    el.textContent = s; el.className = 'cd' + (s === 'GO!' ? ' go' : '');
+    void el.offsetWidth; el.classList.add('anim');
+    sfx(s === 'GO!' ? 'go' : 'count');
+  }, i * 650));
+  later(() => {
+    S.screen = 'question'; S.chips = []; S.locked = false; render();
+    if (ROUNDS[S.round].type === 'music') playMusic();
+  }, steps.length * 650);
 }
 
 function startTimer() {
-  const R = ROUNDS[S.round], total = R.time * 1000, end = Date.now() + total;
+  const R = ROUNDS[S.round], total = R.time * 1000, end = Date.now() + total, C = 182.2;
+  let lastSec = R.time;
   const tick = () => {
-    const left = Math.max(0, end - Date.now());
-    const b = $('#tbar'), n = $('#tnum');
-    if (b) b.style.transform = `scaleX(${left / total})`;
-    if (n) n.textContent = Math.ceil(left / 1000);
+    const left = Math.max(0, end - Date.now()), sec = Math.ceil(left / 1000);
+    const fg = $('#ringfg'), n = $('#tnum'), ring = $('#ring');
+    if (fg) fg.style.strokeDashoffset = C * (1 - left / total);
+    if (n) n.textContent = sec;
+    if (ring) ring.classList.toggle('hot', sec <= 3);
+    if (sec !== lastSec) { lastSec = sec; if (sec <= 3 && sec > 0) sfx('tick'); }
     if (left <= 0) { clearInterval(T); T = null; timeUp(); }
   };
-  tick(); T = setInterval(tick, 100);
+  tick(); T = setInterval(tick, 80);
 }
 function currentAnswer() {
   const R = ROUNDS[S.round];
@@ -807,93 +1066,143 @@ function currentAnswer() {
   if (R.type === 'text') return ($('#f-text') || { value: '' }).value;
   return null;
 }
-function timeUp() {
-  const R = ROUNDS[S.round];
-  toast(R.type === 'choice' ? "Time's up. No answer this round." : "Time's up. Locked in what you had.");
-  submit(currentAnswer());
+function timeUp() { submit(currentAnswer(), true); }
+function stamp(text, cls = '') {
+  document.querySelector('.stamp')?.remove();
+  $('#phone').insertAdjacentHTML('beforeend', `<div class="stamp ${cls}"><span>${text}</span></div>`);
 }
-function submit(val) {
-  clearTimers();
+function submit(val, timedOut = false) {
+  if (S.locked) return;
+  S.locked = true;
+  clearInterval(T); T = null;
   const r = S.round;
   S.answers[r] = val;
+  const prev = S.prevSync || [];
   S.syncNow = findSync(r);
-  S.syncNow.forEach(id => { if (!S.known.includes(id)) S.known.push(id); log(id, r, 'Synced on ' + ROUNDS[r].theme, 'hit'); });
+  S.syncNow.forEach(id => {
+    if (!S.known.includes(id)) S.known.push(id);
+    S.streak[id] = prev.includes(id) ? (S.streak[id] || 1) + 1 : 1;
+    log(id, r, 'Synced on ' + ROUNDS[r].theme, 'hit');
+  });
+  S.prevSync = [...S.syncNow];
   S.chips = []; S.sparkSel = null;
-  S.screen = 'sync'; render();
+  stamp(timedOut ? "Time's up!" : 'Locked in!', timedOut ? 'time' : '');
+  sfx(timedOut ? 'time' : 'lock');
+  later(() => {
+    document.querySelector('.stamp')?.remove();
+    S.screen = 'sync'; render();
+    sfx(S.syncNow.length ? 'sync' : 'solo');
+  }, 950);
 }
 
+function bumpCount(n) {
+  const b = $('#bigcount'), h = $('#hudcount');
+  if (b) { b.innerHTML = `${n}<small>left</small>`; b.classList.remove('bump'); void b.offsetWidth; b.classList.add('bump'); }
+  if (h) h.textContent = n;
+}
 function runSplit() {
-  const L = S.lastSplit, plat = $('#platform'), notes = $('#notes'), big = $('#bigcount'), hdr = $('#hdrcount');
+  const L = S.lastSplit, ar = $('#arena'), notes = $('#notes');
   const sp = sparkedIds();
-  const order = [...L.falling.filter(id => !isRich(id)), ...L.falling.filter(id => isRich(id) && !sp.includes(id) && !S.known.includes(id)),
-    ...L.falling.filter(id => isRich(id) && S.known.includes(id) && !sp.includes(id)), ...L.falling.filter(id => sp.includes(id))];
+  const isKnown = id => isRich(id) && faceOn(id) && (S.known.includes(id) || sp.includes(id));
+  const order = [...L.falling.filter(id => !isKnown(id)), ...L.falling.filter(id => isKnown(id) && !sp.includes(id)), ...L.falling.filter(id => sp.includes(id))];
   const many = order.length > 10;
-  let delay = 500;
-  const startN = L.before.length, endN = L.keepCount - (L.reunion ? 1 : 0);
+  let delay = 700, n = L.before.length + 1;
+  if (many) later(() => { $('#phone').classList.add('shake'); later(() => $('#phone').classList.remove('shake'), 500); }, delay);
   order.forEach((id, i) => {
-    const el = plat.querySelector(`[data-id="${id}"]`);
-    const slow = sp.includes(id), known = isRich(id) && faceOn(id) && (S.known.includes(id) || slow);
-    setTimeout(() => {
+    const el = ar.querySelector(`[data-id="${id}"]`);
+    const slow = sp.includes(id), known = isKnown(id);
+    later(() => {
       if (el) { el.classList.add('falling'); if (slow) el.classList.add('slow'); }
-      const n = startN - i - 1; big.textContent = n; if (hdr) hdr.textContent = n + ' with you';
+      n--; bumpCount(n);
+      if (!many || i % 4 === 0 || known) sfx('fall');
       if (known) {
         const [He] = pron(id);
-        notes.insertAdjacentHTML('beforeend', `<div class="note ${slow ? 'sp' : ''}">${esc(P(id).name)} fell to another platform. ${He}'s still playing, just not with you.</div>`);
+        notes.insertAdjacentHTML('beforeend', `<div class="callout ${slow ? 'sp' : ''}"><b>${slow ? '★ Sparked' : 'Synced'}</b><span>${esc(P(id).name)} fell to another platform. ${He}'s still playing, just not with you.</span></div>`);
       }
     }, delay);
-    delay += slow ? 1400 : known ? 520 : many ? 45 : 200;
+    delay += slow ? 1500 : known ? 600 : many ? 40 : 220;
   });
-  let endAt = delay + 700;
+  let endAt = delay + 900;
   if (L.reunion) {
     const id = L.reunion;
-    setTimeout(() => {
-      plat.insertAdjacentHTML('beforeend', tok(id, 'dropin'));
-      const n = endN + 1; big.textContent = n; if (hdr) hdr.textContent = n + ' with you';
-      notes.insertAdjacentHTML('beforeend', `<div class="note back">${esc(P(id).name)} is back. Your last answers pulled you together again.</div>`);
-    }, delay + 400);
-    endAt = delay + 1500;
+    later(() => {
+      ar.insertAdjacentHTML('beforeend', pl(id, { extra: 'dropin' }));
+      n++; bumpCount(n); sfx('back');
+      notes.insertAdjacentHTML('beforeend', `<div class="callout back"><b>Comeback!</b><span>${esc(P(id).name)} is back. Your last answers pulled you together again.</span></div>`);
+    }, delay + 500);
+    endAt = delay + 1700;
   }
-  setTimeout(() => {
-    const b = $('#nextBtn'); if (b) b.disabled = false;
-    if (!notes.children.length) notes.insertAdjacentHTML('beforeend', `<div class="note">${L.falling.length} people moved to other platforms.</div>`);
+  later(() => {
+    const b = $('#nextBtn'); if (b) { b.disabled = false; b.classList.add('ready-pop'); }
+    if (!notes.children.length) notes.insertAdjacentHTML('beforeend', `<div class="callout"><b>Moved</b><span>${L.falling.length} players went to other platforms.</span></div>`);
   }, endAt);
 }
 
 function startClock() {
-  const end = Date.now() + 72 * 3600 * 1000;
+  if (!S.revealEnd) S.revealEnd = Date.now() + 72 * 3600 * 1000;
   const tick = () => {
-    const s = Math.max(0, Math.floor((end - Date.now()) / 1000));
+    const s = Math.max(0, Math.floor((S.revealEnd - Date.now()) / 1000));
     const pad = x => String(x).padStart(2, '0');
     const c = $('#clock'); if (c) c.textContent = `${pad(Math.floor(s / 3600))}:${pad(Math.floor(s / 60) % 60)}:${pad(s % 60)}`;
   };
   tick(); clockT = setInterval(tick, 1000);
 }
 
+function confetti() {
+  if (REDUCED) return;
+  const phone = $('#phone'), r = phone.getBoundingClientRect(), dpr = window.devicePixelRatio || 1;
+  const c = document.createElement('canvas'); c.className = 'confetti'; c.width = r.width * dpr; c.height = r.height * dpr;
+  phone.appendChild(c);
+  const ctx = c.getContext('2d'); ctx.scale(dpr, dpr);
+  const css = getComputedStyle(document.documentElement);
+  const cols = ['--pink', '--yellow', '--mint', '--blue', '--coral'].map(v => css.getPropertyValue(v).trim());
+  const parts = Array.from({ length: 150 }, () => ({
+    x: r.width / 2 + (Math.random() - .5) * 60, y: r.height * .3,
+    vx: (Math.random() - .5) * 9, vy: -Math.random() * 10 - 3, s: 5 + Math.random() * 6,
+    a: Math.random() * 6, va: (Math.random() - .5) * .4, c: cols[Math.floor(Math.random() * cols.length)]
+  }));
+  const t0 = performance.now();
+  const frame = now => {
+    const t = now - t0;
+    ctx.clearRect(0, 0, r.width, r.height);
+    parts.forEach(p => {
+      p.vy += .28; p.vx *= .99; p.x += p.vx; p.y += p.vy; p.a += p.va;
+      ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(p.a); ctx.fillStyle = p.c;
+      ctx.globalAlpha = Math.max(0, 1 - t / 3000); ctx.fillRect(-p.s / 2, -p.s / 4, p.s, p.s / 2); ctx.restore();
+    });
+    if (t < 3000) requestAnimationFrame(frame); else c.remove();
+  };
+  requestAnimationFrame(frame);
+}
+
 /* ---------- Actions ---------- */
 const A = {
   go: d => { S.screen = d.to; render(); },
-  set: d => { S.me[d.k] = d.v; render(); },
+  mute: () => { S.muted = !S.muted; const b = document.querySelector('[data-act="mute"]'); if (b) { b.innerHTML = S.muted ? ICON.off : ICON.on; b.setAttribute('aria-label', S.muted ? 'Turn sound on' : 'Turn sound off'); } },
+  set: d => { S.me[d.k] = d.v; sfx('pop'); render(); },
+  hue: d => { S.me.hue = Number(d.v); sfx('pop'); render(); },
   prio: d => {
     const p = S.me.prios, i = p.indexOf(d.v);
     if (i >= 0) p.splice(i, 1); else { p.push(d.v); if (p.length > 2) p.shift(); }
-    render();
+    sfx('pop'); render();
   },
   toLobby: () => {
     const m = S.me, miss = [];
-    if (!m.name.trim()) miss.push('your first name');
+    if (!m.name.trim()) miss.push('your name');
     if (!m.gender) miss.push('who you are');
     if (!m.seeking) miss.push('who to show you');
-    if (!m.intent) miss.push('what you are looking for');
-    if (miss.length) { $('#hint').textContent = 'Add ' + miss.join(', ') + ' to continue.'; return; }
-    S.screen = 'lobby'; render();
+    if (!m.intent) miss.push('what you want');
+    if (miss.length) { $('#hint').textContent = 'Add ' + miss.join(', ') + ' to ready up.'; sfx('time'); return; }
+    startGame(); S.screen = 'matchmaking'; render();
   },
-  enter: () => { startGame(); S.screen = 'roundIntro'; render(); },
-  showQ: () => { S.screen = 'question'; S.chips = []; render(); if (ROUNDS[S.round].type === 'music') playClip(); },
-  replay: () => playClip(),
+  enter: () => { S.round = 0; S.screen = 'roundCard'; render(); sfx('go'); },
+  ready: () => { S.screen = 'countdown'; render(); },
+  replay: () => playMusic(),
   pick: d => submit(Number(d.i)),
   mchip: d => {
     const i = S.chips.indexOf(d.v);
     if (i >= 0) S.chips.splice(i, 1); else S.chips.push(d.v);
+    sfx('pop');
     document.querySelectorAll('[data-act="mchip"]').forEach(b => { const on = S.chips.includes(b.dataset.v); b.classList.toggle('on', on); b.setAttribute('aria-pressed', on); });
   },
   lock: () => submit(currentAnswer()),
@@ -901,39 +1210,51 @@ const A = {
     if (canSpark() && S.bucket.some(id => faceOn(id))) { S.screen = 'spark'; render(); }
     else { doSplit(S.round); S.screen = 'split'; render(); }
   },
-  sel: d => { S.sparkSel = S.sparkSel === d.id ? null : d.id; render(); },
+  sel: d => { S.sparkSel = S.sparkSel === d.id ? null : d.id; sfx('pop'); render(); },
   sendSpark: () => {
     if (!S.sparkSel) return;
-    S.sparks[S.round] = S.sparkSel; log(S.sparkSel, S.round, 'You sparked ' + pron(S.sparkSel)[1], 'sp');
-    doSplit(S.round); S.screen = 'split'; render();
+    const id = S.sparkSel;
+    S.sparks[S.round] = id; log(id, S.round, 'You sparked ' + pron(id)[1], 'sp');
+    sfx('spark'); $('#token')?.classList.add('thrown');
+    later(() => { doSplit(S.round); S.screen = 'split'; render(); }, 650);
   },
   skipSpark: () => { doSplit(S.round); S.screen = 'split'; render(); },
   next: () => {
-    if (S.round < 4) { S.round++; S.screen = 'roundIntro'; } else S.screen = 'finalists';
+    if (S.round < 4) { S.round++; S.screen = 'roundCard'; } else S.screen = 'qualified';
     render();
   },
-  open: d => { S.open = d.id; S.screen = 'profile'; render(); },
+  card: (d, el) => {
+    const id = d.id;
+    if (!S.flipped[id]) {
+      S.flipped[id] = true; sfx('flip');
+      el.closest('.card3d').classList.add('flipped');
+      el.setAttribute('aria-label', 'Open ' + P(id).name);
+      return;
+    }
+    S.open = id; S.screen = 'profile'; render();
+  },
   back: () => { S.screen = 'finalists'; render(); },
-  starter: d => { const t = $('#f-msg'); t.value = S._starters[Number(d.i)]; S.drafts[S.open] = t.value; t.focus(); },
+  starter: d => { const t = $('#f-msg'); t.value = S._starters[Number(d.i)]; S.drafts[S.open] = t.value; t.focus(); sfx('pop'); },
   send: () => {
     const t = $('#f-msg'), v = t ? t.value.trim() : '';
     if (!v) { toast('Write a first line, or tap a starter.'); return; }
-    S.decisions[S.open] = 'sent'; toast(`Request sent to ${P(S.open).name}.`);
+    S.decisions[S.open] = 'sent'; sfx('sync'); toast(`Request sent to ${P(S.open).name}.`);
     S.screen = 'finalists'; render();
   },
   pass: () => { S.decisions[S.open] = 'passed'; toast(`Passed. ${P(S.open).name} won't be told.`); S.screen = 'finalists'; render(); },
-  finish: () => { S.screen = 'end'; render(); },
-  again: () => { S = fresh(S.me); S.screen = 'lobby'; render(); }
+  finish: () => { S.screen = 'end'; render(); sfx('win'); },
+  again: () => { const muted = S.muted; S = fresh(S.me); S.muted = muted; startGame(); S.screen = 'matchmaking'; render(); }
 };
 
 document.addEventListener('click', e => {
   const el = e.target.closest('[data-act]');
   if (!el || el.disabled) return;
-  const fn = A[el.dataset.act]; if (fn) fn(el.dataset);
+  ensureAC();
+  const fn = A[el.dataset.act]; if (fn) fn(el.dataset, el);
 });
 document.addEventListener('input', e => {
   const t = e.target;
-  if (t.id === 'f-name') S.me.name = t.value;
+  if (t.id === 'f-name') { S.me.name = t.value; const nm = document.querySelector('.preview .nm'); if (nm) nm.textContent = t.value || 'You'; }
   if (t.id === 'f-amin' || t.id === 'f-amax') {
     let lo = Number($('#f-amin').value), hi = Number($('#f-amax').value);
     if (lo > hi) { if (t.id === 'f-amin') hi = lo; else lo = hi; $('#f-amin').value = lo; $('#f-amax').value = hi; }
@@ -943,7 +1264,15 @@ document.addEventListener('input', e => {
 });
 
 /* ---------- Boot (keeps progress across live updates) ---------- */
-function start(data) { if (data && data.S) S = data.S; render(); }
+function start(data) {
+  if (data && data.S) {
+    const base = fresh();
+    S = { ...base, ...data.S, me: { ...base.me, ...data.S.me } };
+    if (['countdown', 'question'].includes(S.screen)) S.screen = 'roundCard';
+    if (S.screen === 'matchmaking') startGame();
+  }
+  render();
+}
 window.claude?.hot?.snapshot?.(() => ({ S }));
 window.claude?.hot?.ready ? window.claude.hot.ready(start) : start(window.claude?.hot?.data ?? {});
 </script>
